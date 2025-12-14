@@ -9,7 +9,7 @@ import {
   Alert,
   TextInput,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { Card, ProgressBar } from '@/components';
 import { getSettings } from '@/db/repositories/settingsRepository';
 import { getAllTransactions } from '@/db/repositories/transactionsRepository';
@@ -55,6 +55,15 @@ export default function BudgetsScreen() {
   useEffect(() => {
     loadData();
   }, [currentMonthKey]);
+
+  // Reload data when screen comes into focus (e.g., after adding a category)
+  useFocusEffect(
+    React.useCallback(() => {
+      if (currentMonthKey) {
+        loadData();
+      }
+    }, [currentMonthKey])
+  );
 
   const loadData = async () => {
     try {
@@ -192,10 +201,18 @@ export default function BudgetsScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Copy Last Month Button */}
+      {/* Action Buttons */}
       <View style={styles.actionBar}>
-        <TouchableOpacity onPress={handleCopyLastMonth} style={styles.copyButton}>
-          <Text style={styles.copyButtonText}>Copy Last Month's Budgets</Text>
+        <TouchableOpacity onPress={handleCopyLastMonth} style={styles.actionButton}>
+          <Text style={styles.actionButtonText}>Copy Last Month</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => router.push('/add-category')}
+          style={[styles.actionButton, styles.addCategoryButton]}
+        >
+          <Text style={[styles.actionButtonText, styles.addCategoryButtonText]}>
+            + Add Category
+          </Text>
         </TouchableOpacity>
       </View>
 
@@ -295,22 +312,31 @@ const styles = StyleSheet.create({
     color: '#1C1C1E',
   },
   actionBar: {
+    flexDirection: 'row',
+    gap: 12,
     padding: 16,
     paddingTop: 8,
     backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: '#E5E5EA',
   },
-  copyButton: {
+  actionButton: {
+    flex: 1,
     padding: 12,
     backgroundColor: '#F2F2F7',
     borderRadius: 8,
     alignItems: 'center',
   },
-  copyButtonText: {
+  actionButtonText: {
     fontSize: 14,
     fontWeight: '600',
     color: '#007AFF',
+  },
+  addCategoryButton: {
+    backgroundColor: '#007AFF',
+  },
+  addCategoryButtonText: {
+    color: '#fff',
   },
   scrollView: {
     flex: 1,
