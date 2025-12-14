@@ -18,6 +18,7 @@ import {
   getBudgetsByMonth,
   createOrUpdateBudget,
   copyBudgetsToNextMonth,
+  deleteBudget,
 } from '@/db/repositories/budgetsRepository';
 import {
   getCurrentMonthKey,
@@ -138,6 +139,34 @@ export default function BudgetsScreen() {
     }
   };
 
+  const handleDeleteBudget = async (categoryId: number) => {
+    Alert.alert(
+      'Delete Budget',
+      'Are you sure you want to remove this budget?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const budget = budgets.find(
+                (b) => b.categoryId === categoryId && b.monthKey === currentMonthKey
+              );
+              if (budget) {
+                await deleteBudget(budget.id);
+                await loadData();
+              }
+            } catch (error) {
+              console.error('Error deleting budget:', error);
+              Alert.alert('Error', 'Failed to delete budget');
+            }
+          },
+        },
+      ]
+    );
+  };
+
   const handleCopyLastMonth = async () => {
     try {
       const lastMonth = getPreviousMonthKey(currentMonthKey);
@@ -240,15 +269,25 @@ export default function BudgetsScreen() {
                   </TouchableOpacity>
                 </View>
               ) : (
-                <TouchableOpacity
-                  onPress={() => handleEditBudget(item.categoryId, item.budgeted)}
-                >
-                  <Text style={styles.budgetAmount}>
-                    {item.budgeted > 0
-                      ? formatMoney(item.budgeted, currency)
-                      : 'Set Budget'}
-                  </Text>
-                </TouchableOpacity>
+                <View style={styles.budgetActions}>
+                  <TouchableOpacity
+                    onPress={() => handleEditBudget(item.categoryId, item.budgeted)}
+                  >
+                    <Text style={styles.budgetAmount}>
+                      {item.budgeted > 0
+                        ? formatMoney(item.budgeted, currency)
+                        : 'Set Budget'}
+                    </Text>
+                  </TouchableOpacity>
+                  {item.budgeted > 0 && (
+                    <TouchableOpacity
+                      onPress={() => handleDeleteBudget(item.categoryId)}
+                      style={styles.deleteButton}
+                    >
+                      <Text style={styles.deleteButtonText}>✕</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
               )}
             </View>
 
@@ -362,6 +401,25 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: '#007AFF',
+  },
+  budgetActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  deleteButton: {
+    padding: 4,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#FF3B30',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  deleteButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: 'bold',
   },
   editContainer: {
     flexDirection: 'row',
