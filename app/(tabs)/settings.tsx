@@ -60,6 +60,19 @@ export default function SettingsScreen() {
       </Card>
 
       <Card style={styles.card}>
+        <Text style={styles.sectionTitle}>Categories</Text>
+        <Text style={styles.description}>
+          Rename or delete your custom budget categories.
+        </Text>
+        <Button
+          title="Manage Categories"
+          onPress={() => router.push('/manage-categories')}
+          variant="secondary"
+          style={styles.manageButton}
+        />
+      </Card>
+
+      <Card style={styles.card}>
         <Text style={styles.sectionTitle}>Data Management</Text>
         <Text style={styles.description}>
           Reset the app to clear all your data and start fresh. This will delete:
@@ -135,6 +148,9 @@ const styles = StyleSheet.create({
     color: '#6E6E73',
     lineHeight: 24,
     paddingLeft: 8,
+  },
+  manageButton: {
+    marginTop: 8,
   },
   resetButton: {
     marginTop: 8,

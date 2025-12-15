@@ -26,6 +26,8 @@ export default function RootLayout() {
       <Stack.Screen name="add-transaction" options={{ title: 'Add Transaction', presentation: 'modal' }} />
       <Stack.Screen name="add-account" options={{ title: 'Add Account', presentation: 'modal' }} />
       <Stack.Screen name="add-category" options={{ title: 'Add Category', presentation: 'modal' }} />
+      <Stack.Screen name="edit-category" options={{ title: 'Rename Category', presentation: 'modal' }} />
+      <Stack.Screen name="manage-categories" options={{ title: 'Manage Categories' }} />
       <Stack.Screen name="paywall" options={{ title: 'Subscription', presentation: 'modal' }} />
     </Stack>
   );

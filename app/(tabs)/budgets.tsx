@@ -408,18 +408,17 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   deleteButton: {
-    padding: 4,
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 6,
     backgroundColor: '#FF3B30',
     alignItems: 'center',
     justifyContent: 'center',
   },
   deleteButtonText: {
     color: '#fff',
-    fontSize: 14,
-    fontWeight: 'bold',
+    fontSize: 13,
+    fontWeight: '600',
   },
   editContainer: {
     flexDirection: 'row',
