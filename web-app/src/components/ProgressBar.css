@@ -1,0 +1,39 @@
+.progress-container {
+  margin-bottom: 12px;
+}
+
+.progress-label-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.progress-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1C1C1E;
+}
+
+.progress-percentage {
+  font-size: 14px;
+  font-weight: 600;
+  color: #007AFF;
+}
+
+.progress-percentage.over-budget {
+  color: #FF3B30;
+}
+
+.progress-bar-background {
+  height: 8px;
+  background-color: #F2F2F7;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
