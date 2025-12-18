@@ -45,3 +45,6 @@ export function majorToMinor(amount: number, decimalPlaces: number = 2): number 
   const multiplier = Math.pow(10, decimalPlaces);
   return Math.round(amount * multiplier);
 }
+
+// Alias for parseMoneyToMinor
+export const parseMoneyInput = parseMoneyToMinor;
