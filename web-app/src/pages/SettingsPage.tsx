@@ -3,7 +3,7 @@ import { Card } from '../components/Card';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
 import { Modal } from '../components/Modal';
-import { getSettings } from '../db/repositories/settingsRepository';
+import { getSettings, updateSettings } from '../db/repositories/settingsRepository';
 import { getAllCategories, createCategory, deleteCategory } from '../db/repositories/categoriesRepository';
 import { getAllTransactions } from '../db/repositories/transactionsRepository';
 import { resetDatabase } from '../db/database';
@@ -16,6 +16,9 @@ export function SettingsPage() {
   const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [categoryType, setCategoryType] = useState<'expense' | 'income'>('expense');
+  const [isEditSettingsOpen, setIsEditSettingsOpen] = useState(false);
+  const [editCurrency, setEditCurrency] = useState('');
+  const [editMonthStartDay, setEditMonthStartDay] = useState('');
 
   useEffect(() => {
     loadData();
@@ -46,6 +49,30 @@ export function SettingsPage() {
     setNewCategoryName('');
     setIsAddCategoryOpen(false);
     await loadData();
+  };
+
+  const handleOpenEditSettings = () => {
+    setEditCurrency(currency);
+    setEditMonthStartDay(monthStartDay);
+    setIsEditSettingsOpen(true);
+  };
+
+  const handleSaveSettings = async () => {
+    const day = parseInt(editMonthStartDay, 10);
+    if (isNaN(day) || day < 1 || day > 28) {
+      alert('Month start day must be between 1 and 28');
+      return;
+    }
+
+    await updateSettings({
+      currency: editCurrency,
+      monthStartDay: day,
+    });
+
+    setIsEditSettingsOpen(false);
+    await loadData();
+    alert('Settings updated! The app will reload to apply changes.');
+    window.location.reload();
   };
 
   const handleDeleteCategory = async (category: Category) => {
@@ -101,6 +128,13 @@ export function SettingsPage() {
             <div>
               <div>Month Start Day</div>
               <div>Day {monthStartDay}</div>
+            </div>
+            <div style={{ marginTop: '16px' }}>
+              <Button
+                title="Edit Settings"
+                onPress={handleOpenEditSettings}
+                variant="secondary"
+              />
             </div>
           </Card>
         </div>
@@ -222,6 +256,46 @@ export function SettingsPage() {
         />
 
         <Button title="Add Category" onPress={handleAddCategory} />
+      </Modal>
+
+      <Modal isOpen={isEditSettingsOpen} onClose={() => setIsEditSettingsOpen(false)} title="Edit Settings">
+        <div style={{ marginBottom: '16px' }}>
+          <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', marginBottom: '6px' }}>
+            Currency
+          </label>
+          <select
+            value={editCurrency}
+            onChange={(e) => setEditCurrency(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '12px',
+              fontSize: '16px',
+              borderRadius: '8px',
+              border: '1px solid transparent',
+              backgroundColor: '#F2F2F7',
+            }}
+          >
+            <option value="USD">USD ($)</option>
+            <option value="GBP">GBP (£)</option>
+            <option value="EUR">EUR (€)</option>
+          </select>
+        </div>
+
+        <Input
+          label="Month Start Day (1-28)"
+          type="number"
+          value={editMonthStartDay}
+          onChange={(e) => setEditMonthStartDay(e.target.value)}
+          min="1"
+          max="28"
+          placeholder="1"
+        />
+
+        <p style={{ fontSize: '14px', color: '#8E8E93', marginBottom: '16px' }}>
+          Changing these settings will affect how your budget months are calculated. The app will reload after saving.
+        </p>
+
+        <Button title="Save Settings" onPress={handleSaveSettings} />
       </Modal>
     </div>
   );
