@@ -160,42 +160,53 @@ export function BudgetsPage() {
       </div>
 
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Add Budget">
-        <div style={{ marginBottom: '16px' }}>
-          <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', marginBottom: '6px' }}>
-            Category
-          </label>
-          <select
-            value={formCategory}
-            onChange={(e) => setFormCategory(e.target.value)}
-            style={{
-              width: '100%',
-              padding: '12px',
-              fontSize: '16px',
-              borderRadius: '8px',
-              border: '1px solid transparent',
-              backgroundColor: '#F2F2F7',
-            }}
-          >
-            {categories.map(cat => (
-              <option key={cat.id} value={cat.id}>{cat.name}</option>
-            ))}
-          </select>
-        </div>
+        {categories.length === 0 ? (
+          <div>
+            <p style={{ fontSize: '14px', color: '#8E8E93', marginBottom: '16px' }}>
+              No expense categories available. Please add expense categories in Settings first.
+            </p>
+            <Button title="Close" onPress={() => setIsModalOpen(false)} variant="secondary" />
+          </div>
+        ) : (
+          <>
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', marginBottom: '6px' }}>
+                Category
+              </label>
+              <select
+                value={formCategory}
+                onChange={(e) => setFormCategory(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  fontSize: '16px',
+                  borderRadius: '8px',
+                  border: '1px solid transparent',
+                  backgroundColor: '#F2F2F7',
+                }}
+              >
+                {categories.map(cat => (
+                  <option key={cat.id} value={cat.id}>{cat.name}</option>
+                ))}
+              </select>
+            </div>
 
-        <Input
-          label="Budget Amount"
-          type="number"
-          step="0.01"
-          value={formAmount}
-          onChange={(e) => setFormAmount(e.target.value)}
-          placeholder="0.00"
-        />
+            <Input
+              label="Budget Amount"
+              type="number"
+              step="0.01"
+              value={formAmount}
+              onChange={(e) => setFormAmount(e.target.value)}
+              placeholder="0.00"
+            />
 
-        <p style={{ fontSize: '14px', color: '#8E8E93', marginBottom: '16px' }}>
-          Set your spending limit for this category for {monthKey}.
-        </p>
+            <p style={{ fontSize: '14px', color: '#8E8E93', marginBottom: '16px' }}>
+              Set your spending limit for this category for {monthKey}.
+            </p>
 
-        <Button title="Save Budget" onPress={handleAddBudget} />
+            <Button title="Save Budget" onPress={handleAddBudget} />
+          </>
+        )}
       </Modal>
     </div>
   );
