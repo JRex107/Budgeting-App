@@ -166,98 +166,111 @@ export function TransactionsPage() {
       </div>
 
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Add Transaction">
-        <div>
-          <Button
-            title="Expense"
-            variant={formType === 'expense' ? 'primary' : 'secondary'}
-            onPress={() => setFormType('expense')}
-           
-          />
-          <Button
-            title="Income"
-            variant={formType === 'income' ? 'primary' : 'secondary'}
-            onPress={() => setFormType('income')}
-           
-          />
-        </div>
+        {(categories.length === 0 || accounts.length === 0) ? (
+          <div>
+            <p style={{ fontSize: '14px', color: '#8E8E93', marginBottom: '16px' }}>
+              {categories.length === 0 && accounts.length === 0
+                ? 'No categories or accounts available. Please add them in Settings first.'
+                : categories.length === 0
+                ? 'No categories available. Please add categories in Settings first.'
+                : 'No accounts available. Please contact support.'}
+            </p>
+            <Button title="Close" onPress={() => setIsModalOpen(false)} variant="secondary" />
+          </div>
+        ) : (
+          <>
+            <div>
+              <Button
+                title="Expense"
+                variant={formType === 'expense' ? 'primary' : 'secondary'}
+                onPress={() => setFormType('expense')}
+              />
+              <Button
+                title="Income"
+                variant={formType === 'income' ? 'primary' : 'secondary'}
+                onPress={() => setFormType('income')}
+              />
+            </div>
 
-        <Input
-          label="Amount"
-          type="number"
-          step="0.01"
-          value={formAmount}
-          onChange={(e) => setFormAmount(e.target.value)}
-          placeholder="0.00"
-        />
+            <Input
+              label="Amount"
+              type="number"
+              step="0.01"
+              value={formAmount}
+              onChange={(e) => setFormAmount(e.target.value)}
+              placeholder="0.00"
+            />
 
-        <div>
-          <label>
-            Category
-          </label>
-          <select
-            value={formCategory}
-            onChange={(e) => setFormCategory(e.target.value)}
-            style={{
-              width: '100%',
-              padding: '12px',
-              fontSize: '16px',
-              borderRadius: '8px',
-              border: '1px solid transparent',
-              backgroundColor: '#F2F2F7',
-            }}
-          >
-            {categories
-              .filter(c => formType === 'income' ? c.isIncomeCategory === 1 : c.isIncomeCategory === 0)
-              .map(cat => (
-                <option key={cat.id} value={cat.id}>{cat.name}</option>
-              ))}
-          </select>
-        </div>
+            <div>
+              <label>
+                Category
+              </label>
+              <select
+                value={formCategory}
+                onChange={(e) => setFormCategory(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  fontSize: '16px',
+                  borderRadius: '8px',
+                  border: '1px solid transparent',
+                  backgroundColor: '#F2F2F7',
+                }}
+              >
+                {categories
+                  .filter(c => formType === 'income' ? c.isIncomeCategory === 1 : c.isIncomeCategory === 0)
+                  .map(cat => (
+                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                  ))}
+              </select>
+            </div>
 
-        <div>
-          <label>
-            Account
-          </label>
-          <select
-            value={formAccount}
-            onChange={(e) => setFormAccount(e.target.value)}
-            style={{
-              width: '100%',
-              padding: '12px',
-              fontSize: '16px',
-              borderRadius: '8px',
-              border: '1px solid transparent',
-              backgroundColor: '#F2F2F7',
-            }}
-          >
-            {accounts.map(acc => (
-              <option key={acc.id} value={acc.id}>{acc.name}</option>
-            ))}
-          </select>
-        </div>
+            <div>
+              <label>
+                Account
+              </label>
+              <select
+                value={formAccount}
+                onChange={(e) => setFormAccount(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  fontSize: '16px',
+                  borderRadius: '8px',
+                  border: '1px solid transparent',
+                  backgroundColor: '#F2F2F7',
+                }}
+              >
+                {accounts.map(acc => (
+                  <option key={acc.id} value={acc.id}>{acc.name}</option>
+                ))}
+              </select>
+            </div>
 
-        <Input
-          label="Date"
-          type="date"
-          value={formDate}
-          onChange={(e) => setFormDate(e.target.value)}
-        />
+            <Input
+              label="Date"
+              type="date"
+              value={formDate}
+              onChange={(e) => setFormDate(e.target.value)}
+            />
 
-        <Input
-          label="Merchant (optional)"
-          value={formMerchant}
-          onChange={(e) => setFormMerchant(e.target.value)}
-          placeholder="Store name"
-        />
+            <Input
+              label="Merchant (optional)"
+              value={formMerchant}
+              onChange={(e) => setFormMerchant(e.target.value)}
+              placeholder="Store name"
+            />
 
-        <Input
-          label="Note (optional)"
-          value={formNote}
-          onChange={(e) => setFormNote(e.target.value)}
-          placeholder="Additional details"
-        />
+            <Input
+              label="Note (optional)"
+              value={formNote}
+              onChange={(e) => setFormNote(e.target.value)}
+              placeholder="Additional details"
+            />
 
-        <Button title="Add Transaction" onPress={handleAddTransaction} />
+            <Button title="Add Transaction" onPress={handleAddTransaction} />
+          </>
+        )}
       </Modal>
     </div>
   );

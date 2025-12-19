@@ -4,6 +4,8 @@ import { Button } from '../components/Button';
 import { Input } from '../components/Input';
 import { Card } from '../components/Card';
 import { createSettings } from '../db/repositories/settingsRepository';
+import { seedDefaultCategories } from '../db/repositories/categoriesRepository';
+import { seedDefaultAccount } from '../db/repositories/accountsRepository';
 
 export function OnboardingPage() {
   const [currency, setCurrency] = useState('USD');
@@ -12,17 +14,24 @@ export function OnboardingPage() {
 
   const handleSubmit = async () => {
     const day = parseInt(monthStartDay, 10);
-    
+
     if (isNaN(day) || day < 1 || day > 28) {
       setError('Month start day must be between 1 and 28');
       return;
     }
 
     try {
+      // Create settings
       await createSettings(currency, day);
+
+      // Seed default data
+      await seedDefaultAccount();
+      await seedDefaultCategories();
+
       window.location.reload(); // Refresh to update onboarding status
     } catch (err) {
       setError('Failed to save settings');
+      console.error(err);
     }
   };
 
