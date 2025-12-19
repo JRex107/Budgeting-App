@@ -30,6 +30,19 @@ export function TransactionsPage() {
 
   useEffect(() => {
     loadData();
+
+    // Reload data when page becomes visible (user switches tabs)
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        loadData();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, []);
 
   const loadData = async () => {
@@ -91,6 +104,11 @@ export function TransactionsPage() {
 
   const getCategoryName = (id: number) => categories.find(c => c.id === id)?.name || 'Unknown';
 
+  const handleOpenModal = async () => {
+    await loadData(); // Refresh data before opening modal
+    setIsModalOpen(true);
+  };
+
   return (
     <div className="page">
       <div className="page-header">
@@ -107,8 +125,7 @@ export function TransactionsPage() {
 
         <Button
           title="+ Add Transaction"
-          onPress={() => setIsModalOpen(true)}
-         
+          onPress={handleOpenModal}
         />
 
         {filteredTransactions.length === 0 ? (

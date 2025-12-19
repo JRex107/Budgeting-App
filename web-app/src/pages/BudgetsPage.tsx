@@ -25,6 +25,19 @@ export function BudgetsPage() {
 
   useEffect(() => {
     loadData();
+
+    // Reload data when page becomes visible (user switches tabs)
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        loadData();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, []);
 
   const loadData = async () => {
@@ -86,6 +99,11 @@ export function BudgetsPage() {
 
   const getCategoryName = (id: number) => categories.find(c => c.id === id)?.name || 'Unknown';
 
+  const handleOpenModal = async () => {
+    await loadData(); // Refresh data before opening modal
+    setIsModalOpen(true);
+  };
+
   return (
     <div className="page">
       <div className="page-header">
@@ -100,7 +118,7 @@ export function BudgetsPage() {
         </div>
 
         <div style={{ marginBottom: '20px' }}>
-          <Button title="+ Add Budget" onPress={() => setIsModalOpen(true)} />
+          <Button title="+ Add Budget" onPress={handleOpenModal} />
         </div>
 
         {budgets.length === 0 ? (
