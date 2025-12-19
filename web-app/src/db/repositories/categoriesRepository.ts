@@ -28,30 +28,46 @@ export async function deleteCategory(id: number): Promise<void> {
 }
 
 export async function seedDefaultCategories(): Promise<void> {
-  const existing = await getAllCategories();
+  try {
+    const existing = await getAllCategories();
+    console.log('Existing categories before seed:', existing);
 
-  if (existing.length === 0) {
-    // Expense categories
-    const expenseCategories = [
-      'Groceries',
-      'Dining',
-      'Transport',
-      'Entertainment',
-      'Shopping',
-      'Bills',
-      'Healthcare',
-      'Other',
-    ];
+    if (existing.length === 0) {
+      // Expense categories
+      const expenseCategories = [
+        'Groceries',
+        'Dining',
+        'Transport',
+        'Entertainment',
+        'Shopping',
+        'Bills',
+        'Healthcare',
+        'Other',
+      ];
 
-    for (const name of expenseCategories) {
-      await db.categories.add({ name, isIncomeCategory: 0 });
+      console.log('Adding expense categories...');
+      for (const name of expenseCategories) {
+        const id = await db.categories.add({ name, isIncomeCategory: 0 });
+        console.log(`Added expense category "${name}" with ID:`, id);
+      }
+
+      // Income categories
+      const incomeCategories = ['Salary', 'Freelance', 'Investment', 'Other Income'];
+
+      console.log('Adding income categories...');
+      for (const name of incomeCategories) {
+        const id = await db.categories.add({ name, isIncomeCategory: 1 });
+        console.log(`Added income category "${name}" with ID:`, id);
+      }
+
+      // Verify they were added
+      const verify = await getAllCategories();
+      console.log('Categories after seed:', verify);
+    } else {
+      console.log('Categories already exist, skipping seed');
     }
-
-    // Income categories
-    const incomeCategories = ['Salary', 'Freelance', 'Investment', 'Other Income'];
-
-    for (const name of incomeCategories) {
-      await db.categories.add({ name, isIncomeCategory: 1 });
-    }
+  } catch (err) {
+    console.error('Error seeding default categories:', err);
+    throw err;
   }
 }

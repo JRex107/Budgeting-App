@@ -23,9 +23,23 @@ export async function deleteAccount(id: number): Promise<void> {
 }
 
 export async function seedDefaultAccount(): Promise<void> {
-  const existing = await getAllAccounts();
+  try {
+    const existing = await getAllAccounts();
+    console.log('Existing accounts before seed:', existing);
 
-  if (existing.length === 0) {
-    await db.accounts.add({ name: 'Main Account' });
+    if (existing.length === 0) {
+      console.log('Adding Main Account...');
+      const id = await db.accounts.add({ name: 'Main Account' });
+      console.log('Main Account created with ID:', id);
+
+      // Verify it was added
+      const verify = await getAllAccounts();
+      console.log('Accounts after seed:', verify);
+    } else {
+      console.log('Accounts already exist, skipping seed');
+    }
+  } catch (err) {
+    console.error('Error seeding default account:', err);
+    throw err;
   }
 }

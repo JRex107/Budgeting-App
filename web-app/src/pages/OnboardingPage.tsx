@@ -21,17 +21,32 @@ export function OnboardingPage() {
     }
 
     try {
+      console.log('Starting onboarding setup...');
+
       // Create settings
+      console.log('Creating settings:', { currency, monthStartDay: day });
       await createSettings(currency, day);
+      console.log('Settings created successfully');
 
-      // Seed default data
+      // Seed default account
+      console.log('Seeding default account...');
       await seedDefaultAccount();
-      await seedDefaultCategories();
+      console.log('Default account seeded successfully');
 
+      // Seed default categories
+      console.log('Seeding default categories...');
+      await seedDefaultCategories();
+      console.log('Default categories seeded successfully');
+
+      // Wait a bit to ensure IndexedDB writes complete
+      console.log('Waiting for database writes to complete...');
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      console.log('Onboarding complete, reloading...');
       window.location.reload(); // Refresh to update onboarding status
     } catch (err) {
-      setError('Failed to save settings');
-      console.error(err);
+      console.error('Onboarding error:', err);
+      setError(`Failed to save settings: ${err instanceof Error ? err.message : String(err)}`);
     }
   };
 
