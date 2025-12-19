@@ -50,7 +50,7 @@ class BudgetingDatabase extends Dexie {
     this.version(1).stores({
       settings: 'id',
       accounts: '++id, &name',
-      categories: '++id, &name',
+      categories: '++id, &name, isIncomeCategory',
       transactions: '++id, accountId, categoryId, dateISO, [accountId+dateISO], [categoryId+dateISO]',
       budgets: '++id, monthKey, categoryId, [monthKey+categoryId]',
     });
