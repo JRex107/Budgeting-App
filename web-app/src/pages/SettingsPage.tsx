@@ -5,16 +5,20 @@ import { Input } from '../components/Input';
 import { Modal } from '../components/Modal';
 import { getSettings, updateSettings } from '../db/repositories/settingsRepository';
 import { getAllCategories, createCategory, deleteCategory } from '../db/repositories/categoriesRepository';
+import { getAllAccounts, createAccount, deleteAccount } from '../db/repositories/accountsRepository';
 import { getAllTransactions } from '../db/repositories/transactionsRepository';
 import { resetDatabase } from '../db/database';
-import type { Category } from '../db/database';
+import type { Category, Account } from '../db/database';
 
 export function SettingsPage() {
   const [categories, setCategories] = useState<Category[]>([]);
+  const [accounts, setAccounts] = useState<Account[]>([]);
   const [currency, setCurrency] = useState('');
   const [monthStartDay, setMonthStartDay] = useState('');
   const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false);
+  const [isAddAccountOpen, setIsAddAccountOpen] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
+  const [newAccountName, setNewAccountName] = useState('');
   const [categoryType, setCategoryType] = useState<'expense' | 'income'>('expense');
   const [isEditSettingsOpen, setIsEditSettingsOpen] = useState(false);
   const [editCurrency, setEditCurrency] = useState('');
@@ -33,6 +37,9 @@ export function SettingsPage() {
 
     const cats = await getAllCategories();
     setCategories(cats);
+
+    const accs = await getAllAccounts();
+    setAccounts(accs);
   };
 
   const handleAddCategory = async () => {
@@ -48,6 +55,19 @@ export function SettingsPage() {
 
     setNewCategoryName('');
     setIsAddCategoryOpen(false);
+    await loadData();
+  };
+
+  const handleAddAccount = async () => {
+    if (!newAccountName.trim()) {
+      alert('Please enter an account name');
+      return;
+    }
+
+    await createAccount(newAccountName.trim());
+
+    setNewAccountName('');
+    setIsAddAccountOpen(false);
     await loadData();
   };
 
@@ -87,6 +107,23 @@ export function SettingsPage() {
     if (window.confirm(`Delete category "${category.name}"?`)) {
       if (category.id) {
         await deleteCategory(category.id);
+        await loadData();
+      }
+    }
+  };
+
+  const handleDeleteAccount = async (account: Account) => {
+    const transactions = await getAllTransactions();
+    const hasTransactions = transactions.some(tx => tx.accountId === account.id);
+
+    if (hasTransactions) {
+      alert(`Cannot delete "${account.name}" because it has transactions. Delete the transactions first.`);
+      return;
+    }
+
+    if (window.confirm(`Delete account "${account.name}"?`)) {
+      if (account.id) {
+        await deleteAccount(account.id);
         await loadData();
       }
     }
@@ -135,6 +172,56 @@ export function SettingsPage() {
                 onPress={handleOpenEditSettings}
                 variant="secondary"
               />
+            </div>
+          </Card>
+        </div>
+
+        <div>
+          <Card>
+            <h3>
+              Accounts
+            </h3>
+            <Button
+              title="+ Add Account"
+              onPress={() => setIsAddAccountOpen(true)}
+              variant="secondary"
+            />
+
+            <div style={{ marginTop: '16px' }}>
+              {accounts.length === 0 ? (
+                <p style={{ fontSize: '14px', color: '#8E8E93' }}>
+                  No accounts yet. Add one to get started!
+                </p>
+              ) : (
+                accounts.map(acc => (
+                  <div
+                    key={acc.id}
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      padding: '8px 0',
+                      borderBottom: '1px solid #F2F2F7',
+                    }}
+                  >
+                    <span>{acc.name}</span>
+                    <button
+                      onClick={() => handleDeleteAccount(acc)}
+                      style={{
+                        padding: '4px 8px',
+                        backgroundColor: '#FF3B30',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        fontSize: '12px',
+                      }}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                ))
+              )}
             </div>
           </Card>
         </div>
@@ -231,6 +318,17 @@ export function SettingsPage() {
           <Button title="Reset App" onPress={handleResetApp} variant="danger" />
         </Card>
       </div>
+
+      <Modal isOpen={isAddAccountOpen} onClose={() => setIsAddAccountOpen(false)} title="Add Account">
+        <Input
+          label="Account Name"
+          value={newAccountName}
+          onChange={(e) => setNewAccountName(e.target.value)}
+          placeholder="e.g., Main Account"
+        />
+
+        <Button title="Add Account" onPress={handleAddAccount} />
+      </Modal>
 
       <Modal isOpen={isAddCategoryOpen} onClose={() => setIsAddCategoryOpen(false)} title="Add Category">
         <div>
