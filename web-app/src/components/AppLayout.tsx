@@ -33,6 +33,15 @@ export function AppLayout() {
           Budgets
         </NavLink>
         <NavLink
+          to="/savings"
+          className={({ isActive }) =>
+            `bottom-nav-item ${isActive ? 'active' : ''}`
+          }
+        >
+          <span className="bottom-nav-icon">🏦</span>
+          Savings
+        </NavLink>
+        <NavLink
           to="/overview"
           className={({ isActive }) =>
             `bottom-nav-item ${isActive ? 'active' : ''}`

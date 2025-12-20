@@ -36,6 +36,22 @@ export interface Budget {
   amountMinor: number;
 }
 
+export interface SavingsPot {
+  id?: number;
+  name: string;
+  targetAmountMinor: number; // Goal amount (0 if no goal)
+  currentAmountMinor: number; // Current balance
+  colorHex: string; // Color for UI (e.g., "#FF6B6B")
+}
+
+export interface PotTransaction {
+  id?: number;
+  potId: number;
+  amountMinor: number; // Positive for deposit, negative for withdrawal
+  dateISO: string; // YYYY-MM-DD format
+  note: string;
+}
+
 // Dexie database class
 class BudgetingDatabase extends Dexie {
   settings!: EntityTable<Settings, 'id'>;
@@ -43,6 +59,8 @@ class BudgetingDatabase extends Dexie {
   categories!: EntityTable<Category, 'id'>;
   transactions!: EntityTable<Transaction, 'id'>;
   budgets!: EntityTable<Budget, 'id'>;
+  savingsPots!: EntityTable<SavingsPot, 'id'>;
+  potTransactions!: EntityTable<PotTransaction, 'id'>;
 
   constructor() {
     super('BudgetingApp');
@@ -53,6 +71,8 @@ class BudgetingDatabase extends Dexie {
       categories: '++id, &name, isIncomeCategory',
       transactions: '++id, accountId, categoryId, dateISO, [accountId+dateISO], [categoryId+dateISO]',
       budgets: '++id, monthKey, categoryId, [monthKey+categoryId]',
+      savingsPots: '++id, &name',
+      potTransactions: '++id, potId, dateISO',
     });
   }
 }
@@ -79,12 +99,14 @@ export async function initializeDatabase(): Promise<void> {
 
 // Reset database (clear all data)
 export async function resetDatabase(): Promise<void> {
-  await db.transaction('rw', [db.settings, db.accounts, db.categories, db.transactions, db.budgets], async () => {
+  await db.transaction('rw', [db.settings, db.accounts, db.categories, db.transactions, db.budgets, db.savingsPots, db.potTransactions], async () => {
     await db.settings.clear();
     await db.accounts.clear();
     await db.categories.clear();
     await db.transactions.clear();
     await db.budgets.clear();
+    await db.savingsPots.clear();
+    await db.potTransactions.clear();
   });
 
   // Re-initialize with defaults

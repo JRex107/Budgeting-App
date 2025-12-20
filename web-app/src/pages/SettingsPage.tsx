@@ -6,19 +6,25 @@ import { Modal } from '../components/Modal';
 import { getSettings, updateSettings } from '../db/repositories/settingsRepository';
 import { getAllCategories, createCategory, deleteCategory } from '../db/repositories/categoriesRepository';
 import { getAllAccounts, createAccount, deleteAccount } from '../db/repositories/accountsRepository';
+import { getAllSavingsPots, createSavingsPot, deleteSavingsPot } from '../db/repositories/savingsPotsRepository';
 import { getAllTransactions } from '../db/repositories/transactionsRepository';
 import { resetDatabase } from '../db/database';
-import type { Category, Account } from '../db/database';
+import type { Category, Account, SavingsPot } from '../db/database';
 
 export function SettingsPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
+  const [savingsPots, setSavingsPots] = useState<SavingsPot[]>([]);
   const [currency, setCurrency] = useState('');
   const [monthStartDay, setMonthStartDay] = useState('');
   const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false);
   const [isAddAccountOpen, setIsAddAccountOpen] = useState(false);
+  const [isAddPotOpen, setIsAddPotOpen] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newAccountName, setNewAccountName] = useState('');
+  const [newPotName, setNewPotName] = useState('');
+  const [newPotTarget, setNewPotTarget] = useState('');
+  const [newPotColor, setNewPotColor] = useState('#007AFF');
   const [categoryType, setCategoryType] = useState<'expense' | 'income'>('expense');
   const [isEditSettingsOpen, setIsEditSettingsOpen] = useState(false);
   const [editCurrency, setEditCurrency] = useState('');
@@ -40,6 +46,9 @@ export function SettingsPage() {
 
     const accs = await getAllAccounts();
     setAccounts(accs);
+
+    const pots = await getAllSavingsPots();
+    setSavingsPots(pots);
   };
 
   const handleAddCategory = async () => {
@@ -68,6 +77,28 @@ export function SettingsPage() {
 
     setNewAccountName('');
     setIsAddAccountOpen(false);
+    await loadData();
+  };
+
+  const handleAddPot = async () => {
+    if (!newPotName.trim()) {
+      alert('Please enter a pot name');
+      return;
+    }
+
+    const targetMinor = newPotTarget ? parseFloat(newPotTarget) * 100 : 0;
+
+    await createSavingsPot({
+      name: newPotName.trim(),
+      targetAmountMinor: Math.round(targetMinor),
+      currentAmountMinor: 0,
+      colorHex: newPotColor,
+    });
+
+    setNewPotName('');
+    setNewPotTarget('');
+    setNewPotColor('#007AFF');
+    setIsAddPotOpen(false);
     await loadData();
   };
 
@@ -124,6 +155,20 @@ export function SettingsPage() {
     if (window.confirm(`Delete account "${account.name}"?`)) {
       if (account.id) {
         await deleteAccount(account.id);
+        await loadData();
+      }
+    }
+  };
+
+  const handleDeletePot = async (pot: SavingsPot) => {
+    if (pot.currentAmountMinor > 0) {
+      alert(`Cannot delete "${pot.name}" because it has a balance. Withdraw all money first.`);
+      return;
+    }
+
+    if (window.confirm(`Delete savings pot "${pot.name}"?`)) {
+      if (pot.id) {
+        await deleteSavingsPot(pot.id);
         await loadData();
       }
     }
@@ -308,6 +353,66 @@ export function SettingsPage() {
           </Card>
         </div>
 
+        <div>
+          <Card>
+            <h3>
+              Savings Pots
+            </h3>
+            <Button
+              title="+ Add Savings Pot"
+              onPress={() => setIsAddPotOpen(true)}
+              variant="secondary"
+            />
+
+            <div style={{ marginTop: '16px' }}>
+              {savingsPots.length === 0 ? (
+                <p style={{ fontSize: '14px', color: '#8E8E93' }}>
+                  No savings pots yet. Create pots to save for specific goals!
+                </p>
+              ) : (
+                savingsPots.map(pot => (
+                  <div
+                    key={pot.id}
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      padding: '8px 0',
+                      borderBottom: '1px solid #F2F2F7',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <div
+                        style={{
+                          width: '12px',
+                          height: '12px',
+                          borderRadius: '50%',
+                          backgroundColor: pot.colorHex,
+                        }}
+                      />
+                      <span>{pot.name}</span>
+                    </div>
+                    <button
+                      onClick={() => handleDeletePot(pot)}
+                      style={{
+                        padding: '4px 8px',
+                        backgroundColor: '#FF3B30',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        fontSize: '12px',
+                      }}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+          </Card>
+        </div>
+
         <Card>
           <h3>
             Danger Zone
@@ -328,6 +433,48 @@ export function SettingsPage() {
         />
 
         <Button title="Add Account" onPress={handleAddAccount} />
+      </Modal>
+
+      <Modal isOpen={isAddPotOpen} onClose={() => setIsAddPotOpen(false)} title="Add Savings Pot">
+        <Input
+          label="Pot Name"
+          value={newPotName}
+          onChange={(e) => setNewPotName(e.target.value)}
+          placeholder="e.g., Emergency Fund"
+        />
+
+        <Input
+          label="Target Amount (optional)"
+          type="number"
+          step="0.01"
+          value={newPotTarget}
+          onChange={(e) => setNewPotTarget(e.target.value)}
+          placeholder="0.00"
+        />
+
+        <div style={{ marginBottom: '16px' }}>
+          <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', marginBottom: '6px' }}>
+            Color
+          </label>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            {['#007AFF', '#34C759', '#FF3B30', '#FF9500', '#AF52DE', '#FF2D55', '#5AC8FA', '#FFCC00'].map(color => (
+              <button
+                key={color}
+                onClick={() => setNewPotColor(color)}
+                style={{
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '8px',
+                  backgroundColor: color,
+                  border: newPotColor === color ? '3px solid #000' : 'none',
+                  cursor: 'pointer',
+                }}
+              />
+            ))}
+          </div>
+        </div>
+
+        <Button title="Add Savings Pot" onPress={handleAddPot} />
       </Modal>
 
       <Modal isOpen={isAddCategoryOpen} onClose={() => setIsAddCategoryOpen(false)} title="Add Category">
