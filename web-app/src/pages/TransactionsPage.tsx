@@ -10,12 +10,14 @@ import { getSettings } from '../db/repositories/settingsRepository';
 import { getAllTransactions, createTransaction, deleteTransaction } from '../db/repositories/transactionsRepository';
 import { getAllCategories } from '../db/repositories/categoriesRepository';
 import { getAllAccounts } from '../db/repositories/accountsRepository';
-import type { Transaction, Category, Account } from '../db/database';
+import { getAllSavingsPots, createPotTransaction } from '../db/repositories/savingsPotsRepository';
+import type { Transaction, Category, Account, SavingsPot } from '../db/database';
 
 export function TransactionsPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
+  const [savingsPots, setSavingsPots] = useState<SavingsPot[]>([]);
   const [currency, setCurrency] = useState('USD');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -33,6 +35,11 @@ export function TransactionsPage() {
   const [formDate, setFormDate] = useState(formatDateISO(new Date()));
   const [formMerchant, setFormMerchant] = useState('');
   const [formNote, setFormNote] = useState('');
+
+  // Savings allocation (for income transactions)
+  const [allocateToSavings, setAllocateToSavings] = useState(false);
+  const [savingsPotId, setSavingsPotId] = useState('');
+  const [savingsAmount, setSavingsAmount] = useState('');
 
   useEffect(() => {
     loadData();
@@ -54,17 +61,20 @@ export function TransactionsPage() {
   const loadData = async () => {
     const settings = await getSettings();
     if (settings) setCurrency(settings.currency);
-    
+
     const txs = await getAllTransactions();
     const cats = await getAllCategories();
     const accs = await getAllAccounts();
-    
+    const pots = await getAllSavingsPots();
+
     setTransactions(txs);
     setCategories(cats);
     setAccounts(accs);
-    
+    setSavingsPots(pots);
+
     if (cats.length > 0) setFormCategory(cats[0].id?.toString() || '');
     if (accs.length > 0) setFormAccount(accs[0].id?.toString() || '');
+    if (pots.length > 0) setSavingsPotId(pots[0].id?.toString() || '');
   };
 
   const handleAddTransaction = async () => {
@@ -72,6 +82,23 @@ export function TransactionsPage() {
     if (amountMinor <= 0) {
       alert('Please enter a valid amount');
       return;
+    }
+
+    // Validate savings allocation if enabled
+    if (allocateToSavings && formType === 'income') {
+      const savingsAmountMinor = parseMoneyInput(savingsAmount);
+      if (savingsAmountMinor <= 0) {
+        alert('Please enter a valid savings amount');
+        return;
+      }
+      if (savingsAmountMinor > amountMinor) {
+        alert('Savings amount cannot exceed income amount');
+        return;
+      }
+      if (!savingsPotId) {
+        alert('Please select a savings pot');
+        return;
+      }
     }
 
     await createTransaction({
@@ -84,13 +111,26 @@ export function TransactionsPage() {
       note: formNote,
     });
 
+    // If allocating to savings, create pot transaction
+    if (allocateToSavings && formType === 'income' && savingsPotId) {
+      const savingsAmountMinor = parseMoneyInput(savingsAmount);
+      await createPotTransaction({
+        potId: parseInt(savingsPotId, 10),
+        amountMinor: savingsAmountMinor,
+        dateISO: formDate,
+        note: formNote || `Income allocation: ${formMerchant || 'Transaction'}`,
+      });
+    }
+
     // Reset form
     setFormAmount('');
     setFormMerchant('');
     setFormNote('');
     setFormDate(formatDateISO(new Date()));
+    setAllocateToSavings(false);
+    setSavingsAmount('');
     setIsModalOpen(false);
-    
+
     await loadData();
   };
 
@@ -359,6 +399,74 @@ export function TransactionsPage() {
               onChange={(e) => setFormNote(e.target.value)}
               placeholder="Additional details"
             />
+
+            {/* Savings Allocation - Only for Income */}
+            {formType === 'income' && savingsPots.length > 0 && (
+              <div style={{
+                marginTop: '24px',
+                padding: '16px',
+                background: 'var(--color-surface)',
+                borderRadius: 'var(--radius-lg)',
+                border: '1px solid var(--color-border)',
+              }}>
+                <label style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  marginBottom: '12px',
+                  cursor: 'pointer',
+                }}>
+                  <input
+                    type="checkbox"
+                    checked={allocateToSavings}
+                    onChange={(e) => setAllocateToSavings(e.target.checked)}
+                    style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                  />
+                  <span style={{ fontSize: '14px', fontWeight: '600', color: 'var(--color-text-primary)' }}>
+                    Allocate to Savings
+                  </span>
+                </label>
+
+                {allocateToSavings && (
+                  <>
+                    <div style={{ marginBottom: '12px' }}>
+                      <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', marginBottom: '6px' }}>
+                        Savings Pot
+                      </label>
+                      <select
+                        value={savingsPotId}
+                        onChange={(e) => setSavingsPotId(e.target.value)}
+                        style={{
+                          width: '100%',
+                          padding: '12px',
+                          fontSize: '16px',
+                          borderRadius: '8px',
+                          border: '1px solid transparent',
+                          backgroundColor: '#F2F2F7',
+                        }}
+                      >
+                        {savingsPots.map(pot => (
+                          <option key={pot.id} value={pot.id}>{pot.name}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <Input
+                      label="Amount to Save"
+                      type="number"
+                      step="0.01"
+                      value={savingsAmount}
+                      onChange={(e) => setSavingsAmount(e.target.value)}
+                      placeholder="0.00"
+                    />
+
+                    <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginTop: '8px' }}>
+                      This will automatically add the specified amount to your selected savings pot.
+                    </p>
+                  </>
+                )}
+              </div>
+            )}
 
             <Button title="Add Transaction" onPress={handleAddTransaction} />
           </>
