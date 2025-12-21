@@ -238,6 +238,28 @@ p {
   position: relative;
 }
 
+/* Compact layout for small screens */
+@media (max-width: 640px) {
+  .bottom-nav-item {
+    padding: 6px 6px;
+    font-size: 10px;
+    gap: 2px;
+  }
+}
+
+/* Hide text labels on very small screens to prevent overflow */
+@media (max-width: 420px) {
+  .bottom-nav-item {
+    padding: 8px 4px;
+    font-size: 0; /* Hide text */
+    gap: 0;
+  }
+
+  .bottom-nav-icon {
+    font-size: 22px; /* Slightly smaller icons on very small screens */
+  }
+}
+
 .bottom-nav-item:hover {
   background: var(--color-surface);
   color: var(--color-text-secondary);
