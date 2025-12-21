@@ -37,9 +37,14 @@ export function TransactionsPage() {
   const [formNote, setFormNote] = useState('');
 
   // Savings allocation (for income transactions)
+  interface SavingsAllocation {
+    potId: string;
+    amount: string;
+  }
   const [allocateToSavings, setAllocateToSavings] = useState(false);
-  const [savingsPotId, setSavingsPotId] = useState('');
-  const [savingsAmount, setSavingsAmount] = useState('');
+  const [savingsAllocations, setSavingsAllocations] = useState<SavingsAllocation[]>([
+    { potId: '', amount: '' }
+  ]);
 
   useEffect(() => {
     loadData();
@@ -74,7 +79,27 @@ export function TransactionsPage() {
 
     if (cats.length > 0) setFormCategory(cats[0].id?.toString() || '');
     if (accs.length > 0) setFormAccount(accs[0].id?.toString() || '');
-    if (pots.length > 0) setSavingsPotId(pots[0].id?.toString() || '');
+    if (pots.length > 0 && savingsAllocations[0].potId === '') {
+      setSavingsAllocations([{ potId: pots[0].id?.toString() || '', amount: '' }]);
+    }
+  };
+
+  const addSavingsAllocation = () => {
+    if (savingsPots.length > 0) {
+      setSavingsAllocations([...savingsAllocations, { potId: savingsPots[0].id?.toString() || '', amount: '' }]);
+    }
+  };
+
+  const removeSavingsAllocation = (index: number) => {
+    if (savingsAllocations.length > 1) {
+      setSavingsAllocations(savingsAllocations.filter((_, i) => i !== index));
+    }
+  };
+
+  const updateSavingsAllocation = (index: number, field: 'potId' | 'amount', value: string) => {
+    const updated = [...savingsAllocations];
+    updated[index][field] = value;
+    setSavingsAllocations(updated);
   };
 
   const handleAddTransaction = async () => {
@@ -84,19 +109,27 @@ export function TransactionsPage() {
       return;
     }
 
-    // Validate savings allocation if enabled
+    // Validate savings allocations if enabled
     if (allocateToSavings && formType === 'income') {
-      const savingsAmountMinor = parseMoneyInput(savingsAmount);
-      if (savingsAmountMinor <= 0) {
-        alert('Please enter a valid savings amount');
-        return;
+      let totalSavings = 0;
+
+      for (const allocation of savingsAllocations) {
+        if (!allocation.potId) {
+          alert('Please select a savings pot for all allocations');
+          return;
+        }
+
+        const allocationAmount = parseMoneyInput(allocation.amount);
+        if (allocationAmount <= 0) {
+          alert('Please enter a valid amount for all savings allocations');
+          return;
+        }
+
+        totalSavings += allocationAmount;
       }
-      if (savingsAmountMinor > amountMinor) {
-        alert('Savings amount cannot exceed income amount');
-        return;
-      }
-      if (!savingsPotId) {
-        alert('Please select a savings pot');
+
+      if (totalSavings > amountMinor) {
+        alert(`Total savings allocation (${formatMoney(totalSavings, currency)}) cannot exceed income amount (${formatMoney(amountMinor, currency)})`);
         return;
       }
     }
@@ -111,15 +144,21 @@ export function TransactionsPage() {
       note: formNote,
     });
 
-    // If allocating to savings, create pot transaction
-    if (allocateToSavings && formType === 'income' && savingsPotId) {
-      const savingsAmountMinor = parseMoneyInput(savingsAmount);
-      await createPotTransaction({
-        potId: parseInt(savingsPotId, 10),
-        amountMinor: savingsAmountMinor,
-        dateISO: formDate,
-        note: formNote || `Income allocation: ${formMerchant || 'Transaction'}`,
-      });
+    // If allocating to savings, create pot transactions for each allocation
+    if (allocateToSavings && formType === 'income') {
+      for (const allocation of savingsAllocations) {
+        if (allocation.potId && allocation.amount) {
+          const allocationAmount = parseMoneyInput(allocation.amount);
+          if (allocationAmount > 0) {
+            await createPotTransaction({
+              potId: parseInt(allocation.potId, 10),
+              amountMinor: allocationAmount,
+              dateISO: formDate,
+              note: formNote || `Income allocation: ${formMerchant || 'Transaction'}`,
+            });
+          }
+        }
+      }
     }
 
     // Reset form
@@ -128,7 +167,7 @@ export function TransactionsPage() {
     setFormNote('');
     setFormDate(formatDateISO(new Date()));
     setAllocateToSavings(false);
-    setSavingsAmount('');
+    setSavingsAllocations([{ potId: savingsPots.length > 0 ? savingsPots[0].id?.toString() || '' : '', amount: '' }]);
     setIsModalOpen(false);
 
     await loadData();
@@ -429,39 +468,77 @@ export function TransactionsPage() {
 
                 {allocateToSavings && (
                   <>
-                    <div style={{ marginBottom: '12px' }}>
-                      <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', marginBottom: '6px' }}>
-                        Savings Pot
-                      </label>
-                      <select
-                        value={savingsPotId}
-                        onChange={(e) => setSavingsPotId(e.target.value)}
-                        style={{
-                          width: '100%',
-                          padding: '12px',
-                          fontSize: '16px',
-                          borderRadius: '8px',
-                          border: '1px solid transparent',
-                          backgroundColor: '#F2F2F7',
-                        }}
-                      >
-                        {savingsPots.map(pot => (
-                          <option key={pot.id} value={pot.id}>{pot.name}</option>
-                        ))}
-                      </select>
-                    </div>
+                    {savingsAllocations.map((allocation, index) => (
+                      <div key={index} style={{
+                        marginBottom: '16px',
+                        padding: '12px',
+                        background: 'var(--color-background-secondary)',
+                        borderRadius: 'var(--radius-md)',
+                        border: '1px solid var(--color-border)',
+                      }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                          <span style={{ fontSize: '12px', fontWeight: '600', color: 'var(--color-text-secondary)' }}>
+                            Allocation {index + 1}
+                          </span>
+                          {savingsAllocations.length > 1 && (
+                            <button
+                              onClick={() => removeSavingsAllocation(index)}
+                              style={{
+                                padding: '4px 8px',
+                                fontSize: '12px',
+                                background: 'var(--color-danger)',
+                                color: '#fff',
+                                border: 'none',
+                                borderRadius: 'var(--radius-sm)',
+                                cursor: 'pointer',
+                              }}
+                            >
+                              Remove
+                            </button>
+                          )}
+                        </div>
 
-                    <Input
-                      label="Amount to Save"
-                      type="number"
-                      step="0.01"
-                      value={savingsAmount}
-                      onChange={(e) => setSavingsAmount(e.target.value)}
-                      placeholder="0.00"
+                        <div style={{ marginBottom: '12px' }}>
+                          <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', marginBottom: '6px' }}>
+                            Savings Pot
+                          </label>
+                          <select
+                            value={allocation.potId}
+                            onChange={(e) => updateSavingsAllocation(index, 'potId', e.target.value)}
+                            style={{
+                              width: '100%',
+                              padding: '12px',
+                              fontSize: '16px',
+                              borderRadius: '8px',
+                              border: '1px solid transparent',
+                              backgroundColor: '#F2F2F7',
+                            }}
+                          >
+                            {savingsPots.map(pot => (
+                              <option key={pot.id} value={pot.id}>{pot.name}</option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <Input
+                          label="Amount to Save"
+                          type="number"
+                          step="0.01"
+                          value={allocation.amount}
+                          onChange={(e) => updateSavingsAllocation(index, 'amount', e.target.value)}
+                          placeholder="0.00"
+                        />
+                      </div>
+                    ))}
+
+                    <Button
+                      title="+ Add Another Pot"
+                      onPress={addSavingsAllocation}
+                      variant="secondary"
                     />
 
-                    <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginTop: '8px' }}>
-                      This will automatically add the specified amount to your selected savings pot.
+                    <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginTop: '12px' }}>
+                      Split your income across multiple savings pots. Total cannot exceed income amount.
                     </p>
                   </>
                 )}
