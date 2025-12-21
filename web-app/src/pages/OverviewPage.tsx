@@ -195,25 +195,25 @@ export function OverviewPage() {
                   type="monotone"
                   dataKey="Income"
                   stroke="#10B981"
-                  strokeWidth={2}
-                  dot={{ fill: '#10B981', r: 4 }}
-                  activeDot={{ r: 6 }}
+                  strokeWidth={3}
+                  dot={{ fill: '#10B981', r: 5 }}
+                  activeDot={{ r: 8 }}
                 />
                 <Line
                   type="monotone"
                   dataKey="Expenses"
                   stroke="#EF4444"
-                  strokeWidth={2}
-                  dot={{ fill: '#EF4444', r: 4 }}
-                  activeDot={{ r: 6 }}
+                  strokeWidth={3}
+                  dot={{ fill: '#EF4444', r: 5 }}
+                  activeDot={{ r: 8 }}
                 />
                 <Line
                   type="monotone"
                   dataKey="Net"
                   stroke="#6366F1"
-                  strokeWidth={2}
-                  dot={{ fill: '#6366F1', r: 4 }}
-                  activeDot={{ r: 6 }}
+                  strokeWidth={3}
+                  dot={{ fill: '#6366F1', r: 5 }}
+                  activeDot={{ r: 8 }}
                 />
               </LineChart>
             </ResponsiveContainer>
