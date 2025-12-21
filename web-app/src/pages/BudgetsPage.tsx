@@ -4,8 +4,9 @@ import { Button } from '../components/Button';
 import { Input } from '../components/Input';
 import { Modal } from '../components/Modal';
 import { ProgressBar } from '../components/ProgressBar';
+import { MonthHeader } from '../components/MonthHeader';
 import { formatMoney, parseMoneyInput } from '../domain/money';
-import { getCurrentMonthKey, getMonthBoundaries } from '../domain/monthCalculations';
+import { getCurrentMonthKey, getMonthBoundaries, getPreviousMonthKey, getNextMonthKey } from '../domain/monthCalculations';
 import { getSettings } from '../db/repositories/settingsRepository';
 import { getBudgetsByMonth, createBudget, updateBudget, deleteBudget, getBudgetByMonthAndCategory } from '../db/repositories/budgetsRepository';
 import { getExpenseCategories } from '../db/repositories/categoriesRepository';
@@ -17,6 +18,7 @@ export function BudgetsPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [currency, setCurrency] = useState('USD');
   const [monthKey, setMonthKey] = useState('');
+  const [monthStartDay, setMonthStartDay] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [spentByCategory, setSpentByCategory] = useState<Map<number, number>>(new Map());
 
@@ -40,22 +42,35 @@ export function BudgetsPage() {
     };
   }, []);
 
+  useEffect(() => {
+    if (monthKey && monthStartDay) {
+      loadMonthData();
+    }
+  }, [monthKey]);
+
   const loadData = async () => {
     const settings = await getSettings();
     if (!settings) return;
 
     setCurrency(settings.currency);
+    setMonthStartDay(settings.monthStartDay);
+
     const currentMonthKey = getCurrentMonthKey(settings.monthStartDay);
     setMonthKey(currentMonthKey);
 
     const cats = await getExpenseCategories();
     setCategories(cats);
     if (cats.length > 0) setFormCategory(cats[0].id?.toString() || '');
+  };
 
-    const monthBudgets = await getBudgetsByMonth(currentMonthKey);
+  const loadMonthData = async () => {
+    const settings = await getSettings();
+    if (!settings) return;
+
+    const monthBudgets = await getBudgetsByMonth(monthKey);
     setBudgets(monthBudgets);
 
-    const boundaries = getMonthBoundaries(currentMonthKey, settings.monthStartDay);
+    const boundaries = getMonthBoundaries(monthKey, settings.monthStartDay);
     const transactions = await getAllTransactions();
     const monthTransactions = transactions.filter(
       tx => tx.type === 'expense' && tx.dateISO >= boundaries.startDate && tx.dateISO <= boundaries.endDate
@@ -67,6 +82,14 @@ export function BudgetsPage() {
       spentMap.set(tx.categoryId, current + tx.amountMinor);
     });
     setSpentByCategory(spentMap);
+  };
+
+  const handlePrevMonth = () => {
+    setMonthKey(getPreviousMonthKey(monthKey));
+  };
+
+  const handleNextMonth = () => {
+    setMonthKey(getNextMonthKey(monthKey));
   };
 
   const handleAddBudget = async () => {
@@ -106,16 +129,12 @@ export function BudgetsPage() {
 
   return (
     <div className="page">
-      <div className="page-header">
-        <h1 className="page-title">Budgets</h1>
-      </div>
       <div className="page-content">
-        <div style={{ marginBottom: '20px' }}>
-          <Card>
-            <h3 style={{ marginBottom: '8px', fontSize: '14px', color: '#8E8E93' }}>Current Month</h3>
-            <p style={{ fontSize: '20px', fontWeight: '600' }}>{monthKey}</p>
-          </Card>
-        </div>
+        <MonthHeader
+          monthKey={monthKey}
+          onPrevMonth={handlePrevMonth}
+          onNextMonth={handleNextMonth}
+        />
 
         <div style={{ marginBottom: '20px' }}>
           <Button title="+ Add Budget" onPress={handleOpenModal} />

@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { Card } from '../components/Card';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
-import { Modal } from '../components/Modal';
+import { SlideOver } from '../components/SlideOver';
+import { FilterChip } from '../components/FilterChip';
 import { formatMoney, parseMoneyInput } from '../domain/money';
 import { formatDateISO } from '../domain/monthCalculations';
 import { getSettings } from '../db/repositories/settingsRepository';
@@ -18,7 +19,12 @@ export function TransactionsPage() {
   const [currency, setCurrency] = useState('USD');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  
+
+  // Filter state
+  const [filterAccount, setFilterAccount] = useState<number | null>(null);
+  const [filterCategory, setFilterCategory] = useState<number | null>(null);
+  const [filterType, setFilterType] = useState<'all' | 'income' | 'expense'>('all');
+
   // Form state
   const [formType, setFormType] = useState<'income' | 'expense'>('expense');
   const [formAmount, setFormAmount] = useState('');
@@ -95,14 +101,36 @@ export function TransactionsPage() {
     }
   };
 
-  const filteredTransactions = searchTerm
-    ? transactions.filter(tx => 
-        tx.merchant.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        tx.note.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    : transactions;
+  const filteredTransactions = transactions.filter(tx => {
+    // Search filter
+    if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase();
+      const matchesSearch =
+        tx.merchant.toLowerCase().includes(searchLower) ||
+        tx.note.toLowerCase().includes(searchLower);
+      if (!matchesSearch) return false;
+    }
+
+    // Account filter
+    if (filterAccount !== null && tx.accountId !== filterAccount) {
+      return false;
+    }
+
+    // Category filter
+    if (filterCategory !== null && tx.categoryId !== filterCategory) {
+      return false;
+    }
+
+    // Type filter
+    if (filterType !== 'all' && tx.type !== filterType) {
+      return false;
+    }
+
+    return true;
+  });
 
   const getCategoryName = (id: number) => categories.find(c => c.id === id)?.name || 'Unknown';
+  const getAccountName = (id: number) => accounts.find(a => a.id === id)?.name || 'Unknown';
 
   const handleOpenModal = async () => {
     await loadData(); // Refresh data before opening modal
@@ -120,6 +148,53 @@ export function TransactionsPage() {
             placeholder="Search transactions..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+
+        {/* Filter Chips */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '16px' }}>
+          <FilterChip
+            label="Type"
+            value={filterType === 'income' ? 'Income' : filterType === 'expense' ? 'Expense' : ''}
+            isActive={filterType !== 'all'}
+            onToggle={() => {
+              if (filterType === 'all') setFilterType('expense');
+              else if (filterType === 'expense') setFilterType('income');
+              else setFilterType('all');
+            }}
+            onRemove={() => setFilterType('all')}
+          />
+
+          <FilterChip
+            label="Account"
+            value={filterAccount !== null ? getAccountName(filterAccount) : ''}
+            isActive={filterAccount !== null}
+            onToggle={() => {
+              if (filterAccount === null && accounts.length > 0) {
+                setFilterAccount(accounts[0].id!);
+              } else if (filterAccount !== null) {
+                const currentIndex = accounts.findIndex(a => a.id === filterAccount);
+                const nextIndex = (currentIndex + 1) % accounts.length;
+                setFilterAccount(accounts[nextIndex].id!);
+              }
+            }}
+            onRemove={() => setFilterAccount(null)}
+          />
+
+          <FilterChip
+            label="Category"
+            value={filterCategory !== null ? getCategoryName(filterCategory) : ''}
+            isActive={filterCategory !== null}
+            onToggle={() => {
+              if (filterCategory === null && categories.length > 0) {
+                setFilterCategory(categories[0].id!);
+              } else if (filterCategory !== null) {
+                const currentIndex = categories.findIndex(c => c.id === filterCategory);
+                const nextIndex = (currentIndex + 1) % categories.length;
+                setFilterCategory(categories[nextIndex].id!);
+              }
+            }}
+            onRemove={() => setFilterCategory(null)}
           />
         </div>
 
@@ -182,7 +257,7 @@ export function TransactionsPage() {
         )}
       </div>
 
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Add Transaction">
+      <SlideOver isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Add Transaction">
         {(categories.length === 0 || accounts.length === 0) ? (
           <div>
             <p style={{ fontSize: '14px', color: '#8E8E93', marginBottom: '16px' }}>
@@ -288,7 +363,7 @@ export function TransactionsPage() {
             <Button title="Add Transaction" onPress={handleAddTransaction} />
           </>
         )}
-      </Modal>
+      </SlideOver>
     </div>
   );
 }

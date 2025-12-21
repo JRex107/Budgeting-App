@@ -20,6 +20,19 @@ export function ProgressBar({
 }: ProgressBarProps) {
   const percentage = max > 0 ? Math.min((current / max) * 100, 100) : 0;
   const isOverBudget = current > max;
+  const isNearLimit = percentage >= 80 && percentage < 100;
+
+  // Generate gradient based on color
+  const getGradient = () => {
+    if (isOverBudget) {
+      return 'linear-gradient(90deg, #EF4444 0%, #F87171 100%)';
+    }
+    if (isNearLimit) {
+      return 'linear-gradient(90deg, #F59E0B 0%, #FBBF24 100%)';
+    }
+    // Default gradient using the provided color
+    return `linear-gradient(90deg, ${color} 0%, ${color}DD 100%)`;
+  };
 
   return (
     <div className={`progress-container ${className}`}>
@@ -27,7 +40,7 @@ export function ProgressBar({
         <div className="progress-label-container">
           <span className="progress-label">{label}</span>
           {showPercentage && (
-            <span className={`progress-percentage ${isOverBudget ? 'over-budget' : ''}`}>
+            <span className={`progress-percentage ${isOverBudget ? 'over-budget' : isNearLimit ? 'near-limit' : ''}`}>
               {percentage.toFixed(0)}%
             </span>
           )}
@@ -35,10 +48,10 @@ export function ProgressBar({
       )}
       <div className="progress-bar-background">
         <div
-          className="progress-bar-fill"
+          className={`progress-bar-fill ${isOverBudget ? 'over-budget-fill' : isNearLimit ? 'near-limit-fill' : ''}`}
           style={{
             width: `${percentage}%`,
-            backgroundColor: isOverBudget ? '#FF3B30' : color,
+            background: getGradient(),
           }}
         />
       </div>
