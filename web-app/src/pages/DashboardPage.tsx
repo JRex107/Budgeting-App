@@ -6,10 +6,14 @@ import { calculateMonthSummary, calculateCategoryBreakdown } from '../domain/sum
 import { getSettings } from '../db/repositories/settingsRepository';
 import { getAllTransactions } from '../db/repositories/transactionsRepository';
 import { getAllCategories } from '../db/repositories/categoriesRepository';
+import { getAllSavingsPots, getTotalSavings } from '../db/repositories/savingsPotsRepository';
+import type { SavingsPot } from '../db/database';
 
 export function DashboardPage() {
   const [summary, setSummary] = useState({ income: 0, expense: 0, net: 0 });
   const [breakdown, setBreakdown] = useState<any[]>([]);
+  const [savingsPots, setSavingsPots] = useState<SavingsPot[]>([]);
+  const [totalSavings, setTotalSavings] = useState(0);
   const [currency, setCurrency] = useState('USD');
   const [loading, setLoading] = useState(true);
 
@@ -37,8 +41,14 @@ export function DashboardPage() {
       const monthlySummary = calculateMonthSummary(monthTransactions);
       const categoryBreakdown = calculateCategoryBreakdown(monthTransactions, categories);
 
+      // Load savings data
+      const pots = await getAllSavingsPots();
+      const total = await getTotalSavings();
+
       setSummary(monthlySummary);
       setBreakdown(categoryBreakdown);
+      setSavingsPots(pots);
+      setTotalSavings(total);
       setLoading(false);
     } catch (error) {
       console.error('Failed to load dashboard:', error);
@@ -82,6 +92,55 @@ export function DashboardPage() {
             </p>
           </div>
         </Card>
+
+        {savingsPots.length > 0 && (
+          <Card>
+            <h3 style={{ marginBottom: '12px', fontSize: '18px' }}>💰 Savings</h3>
+            <div style={{ marginBottom: '16px', padding: '12px', backgroundColor: '#F2F2F7', borderRadius: '8px' }}>
+              <p style={{ fontSize: '12px', color: '#8E8E93', marginBottom: '4px' }}>Total Saved</p>
+              <p style={{ fontSize: '24px', fontWeight: '600', color: '#007AFF' }}>
+                {formatMoney(totalSavings, currency)}
+              </p>
+            </div>
+            {savingsPots.slice(0, 3).map((pot) => {
+              const progress = pot.targetAmountMinor > 0
+                ? Math.min((pot.currentAmountMinor / pot.targetAmountMinor) * 100, 100)
+                : 0;
+              return (
+                <div key={pot.id} style={{ marginBottom: '12px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <div
+                        style={{
+                          width: '10px',
+                          height: '10px',
+                          borderRadius: '50%',
+                          backgroundColor: pot.colorHex,
+                        }}
+                      />
+                      <span style={{ fontSize: '14px', fontWeight: '500' }}>{pot.name}</span>
+                    </div>
+                    <span style={{ fontSize: '14px', fontWeight: '600' }}>
+                      {formatMoney(pot.currentAmountMinor, currency)}
+                    </span>
+                  </div>
+                  {pot.targetAmountMinor > 0 && (
+                    <div style={{ width: '100%', height: '6px', backgroundColor: '#F2F2F7', borderRadius: '3px', overflow: 'hidden' }}>
+                      <div
+                        style={{
+                          width: `${progress}%`,
+                          height: '100%',
+                          backgroundColor: pot.colorHex,
+                          transition: 'width 0.3s ease',
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </Card>
+        )}
 
         {breakdown.length > 0 && (
           <div style={{ marginTop: '20px' }}>

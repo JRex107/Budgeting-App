@@ -5,6 +5,7 @@ import { getMonthBoundaries } from '../domain/monthCalculations';
 import { calculateMonthSummary } from '../domain/summaries';
 import { getSettings } from '../db/repositories/settingsRepository';
 import { getAllTransactions } from '../db/repositories/transactionsRepository';
+import { getTotalSavings } from '../db/repositories/savingsPotsRepository';
 
 interface MonthData {
   monthKey: string;
@@ -15,6 +16,7 @@ interface MonthData {
 
 export function OverviewPage() {
   const [monthsData, setMonthsData] = useState<MonthData[]>([]);
+  const [totalSavings, setTotalSavings] = useState(0);
   const [currency, setCurrency] = useState('USD');
   const [loading, setLoading] = useState(true);
 
@@ -53,7 +55,11 @@ export function OverviewPage() {
       });
     }
 
+    // Load savings data
+    const savings = await getTotalSavings();
+
     setMonthsData(data);
+    setTotalSavings(savings);
     setLoading(false);
   };
 
@@ -92,12 +98,20 @@ export function OverviewPage() {
                 {formatMoney(totalExpense, currency)}
               </div>
             </div>
-            <div>
+            <div style={{ marginBottom: '12px' }}>
               <div style={{ fontSize: '14px', color: '#8E8E93' }}>Net</div>
               <div style={{ fontSize: '20px', fontWeight: '600', color: totalNet >= 0 ? '#34C759' : '#FF3B30' }}>
                 {formatMoney(totalNet, currency)}
               </div>
             </div>
+            {totalSavings > 0 && (
+              <div style={{ paddingTop: '12px', borderTop: '1px solid #E5E5EA' }}>
+                <div style={{ fontSize: '14px', color: '#8E8E93' }}>💰 Total Savings</div>
+                <div style={{ fontSize: '20px', fontWeight: '600', color: '#007AFF' }}>
+                  {formatMoney(totalSavings, currency)}
+                </div>
+              </div>
+            )}
           </Card>
         </div>
 
