@@ -38,38 +38,44 @@
   box-shadow: var(--shadow-sm);
 }
 
-/* Primary Button - Indigo gradient */
+/* Primary Button - Indigo gradient with glow */
 .button-primary {
   background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
   color: #fff;
+  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .button-primary:hover {
   background: linear-gradient(135deg, var(--color-primary-dark) 0%, var(--color-primary) 100%);
+  box-shadow: 0 8px 30px rgba(99, 102, 241, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
-/* Secondary Button - Glass effect */
+/* Secondary Button - Enhanced glass effect */
 .button-secondary {
-  background: var(--color-surface);
+  background: var(--glass-background);
   color: var(--color-primary);
-  border: 1px solid var(--color-border);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: var(--backdrop-blur);
+  -webkit-backdrop-filter: var(--backdrop-blur);
+  box-shadow: var(--glass-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .button-secondary:hover {
-  background: var(--color-surface-hover);
-  border-color: var(--color-primary);
+  background: var(--glass-surface-hover);
+  border-color: rgba(99, 102, 241, 0.5);
+  box-shadow: 0 8px 25px rgba(31, 38, 135, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
-/* Danger Button - Red gradient */
+/* Danger Button - Red gradient with glow */
 .button-danger {
   background: linear-gradient(135deg, var(--color-danger) 0%, var(--color-danger-light) 100%);
   color: #fff;
+  box-shadow: 0 4px 20px rgba(239, 68, 68, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .button-danger:hover {
   background: linear-gradient(135deg, #DC2626 0%, var(--color-danger) 100%);
+  box-shadow: 0 8px 30px rgba(239, 68, 68, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 /* Disabled State */
