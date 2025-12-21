@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { PiggyBank } from 'lucide-react';
 import { Card } from '../components/Card';
 import { formatMoney } from '../domain/money';
 import { getCurrentMonthKey, getMonthBoundaries } from '../domain/monthCalculations';
@@ -95,7 +96,10 @@ export function DashboardPage() {
 
         {savingsPots.length > 0 && (
           <Card>
-            <h3 style={{ marginBottom: '12px', fontSize: '18px' }}>💰 Savings</h3>
+            <h3 style={{ marginBottom: '12px', fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <PiggyBank size={20} strokeWidth={2.5} />
+              Savings
+            </h3>
             <div style={{ marginBottom: '16px', padding: '12px', backgroundColor: '#F2F2F7', borderRadius: '8px' }}>
               <p style={{ fontSize: '12px', color: '#8E8E93', marginBottom: '4px' }}>Total Saved</p>
               <p style={{ fontSize: '24px', fontWeight: '600', color: '#007AFF' }}>

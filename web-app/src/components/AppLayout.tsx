@@ -1,4 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom';
+import { LayoutDashboard, CreditCard, Wallet, PiggyBank, TrendingUp, Settings } from 'lucide-react';
 
 export function AppLayout() {
   return (
@@ -11,7 +12,7 @@ export function AppLayout() {
             `bottom-nav-item ${isActive ? 'active' : ''}`
           }
         >
-          <span className="bottom-nav-icon">📊</span>
+          <LayoutDashboard className="bottom-nav-icon" size={24} strokeWidth={2} />
           Dashboard
         </NavLink>
         <NavLink
@@ -20,7 +21,7 @@ export function AppLayout() {
             `bottom-nav-item ${isActive ? 'active' : ''}`
           }
         >
-          <span className="bottom-nav-icon">💳</span>
+          <CreditCard className="bottom-nav-icon" size={24} strokeWidth={2} />
           Transactions
         </NavLink>
         <NavLink
@@ -29,7 +30,7 @@ export function AppLayout() {
             `bottom-nav-item ${isActive ? 'active' : ''}`
           }
         >
-          <span className="bottom-nav-icon">💰</span>
+          <Wallet className="bottom-nav-icon" size={24} strokeWidth={2} />
           Budgets
         </NavLink>
         <NavLink
@@ -38,7 +39,7 @@ export function AppLayout() {
             `bottom-nav-item ${isActive ? 'active' : ''}`
           }
         >
-          <span className="bottom-nav-icon">🏦</span>
+          <PiggyBank className="bottom-nav-icon" size={24} strokeWidth={2} />
           Savings
         </NavLink>
         <NavLink
@@ -47,7 +48,7 @@ export function AppLayout() {
             `bottom-nav-item ${isActive ? 'active' : ''}`
           }
         >
-          <span className="bottom-nav-icon">📈</span>
+          <TrendingUp className="bottom-nav-icon" size={24} strokeWidth={2} />
           Overview
         </NavLink>
         <NavLink
@@ -56,7 +57,7 @@ export function AppLayout() {
             `bottom-nav-item ${isActive ? 'active' : ''}`
           }
         >
-          <span className="bottom-nav-icon">⚙️</span>
+          <Settings className="bottom-nav-icon" size={24} strokeWidth={2} />
           Settings
         </NavLink>
       </nav>

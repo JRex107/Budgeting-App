@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Moon, Sun, Monitor } from 'lucide-react';
 import { Card } from '../components/Card';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
@@ -29,10 +30,35 @@ export function SettingsPage() {
   const [isEditSettingsOpen, setIsEditSettingsOpen] = useState(false);
   const [editCurrency, setEditCurrency] = useState('');
   const [editMonthStartDay, setEditMonthStartDay] = useState('');
+  const [theme, setTheme] = useState<'light' | 'dark' | 'auto'>('auto');
 
   useEffect(() => {
     loadData();
+    // Load theme preference
+    const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | 'auto' | null;
+    if (savedTheme) {
+      setTheme(savedTheme);
+      applyTheme(savedTheme);
+    }
   }, []);
+
+  const applyTheme = (selectedTheme: 'light' | 'dark' | 'auto') => {
+    const root = document.documentElement;
+
+    if (selectedTheme === 'auto') {
+      // Remove data-theme attribute to use CSS prefers-color-scheme
+      root.removeAttribute('data-theme');
+    } else {
+      // Set data-theme attribute to force light or dark mode
+      root.setAttribute('data-theme', selectedTheme);
+    }
+  };
+
+  const handleThemeChange = (newTheme: 'light' | 'dark' | 'auto') => {
+    setTheme(newTheme);
+    applyTheme(newTheme);
+    localStorage.setItem('theme', newTheme);
+  };
 
   const loadData = async () => {
     const settings = await getSettings();
@@ -175,7 +201,7 @@ export function SettingsPage() {
   };
 
   const handleResetApp = () => {
-    if (!window.confirm('⚠️ Reset all data? This will delete ALL transactions, budgets, and settings. This cannot be undone!')) {
+    if (!window.confirm('WARNING: Reset all data? This will delete ALL transactions, budgets, and settings. This cannot be undone!')) {
       return;
     }
 
@@ -217,6 +243,88 @@ export function SettingsPage() {
                 onPress={handleOpenEditSettings}
                 variant="secondary"
               />
+            </div>
+          </Card>
+        </div>
+
+        <div>
+          <Card>
+            <h3>
+              Appearance
+            </h3>
+            <div style={{ marginBottom: '8px' }}>
+              <div style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px' }}>Theme</div>
+              <div style={{ fontSize: '14px', color: '#8E8E93', marginBottom: '12px' }}>
+                Choose your preferred color theme
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button
+                onClick={() => handleThemeChange('light')}
+                style={{
+                  flex: 1,
+                  padding: '12px',
+                  borderRadius: '8px',
+                  border: theme === 'light' ? '2px solid var(--color-primary)' : '1px solid var(--color-border)',
+                  backgroundColor: theme === 'light' ? 'var(--color-primary-light)' : 'var(--color-surface)',
+                  color: theme === 'light' ? '#fff' : 'var(--color-text-primary)',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '4px',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  transition: 'all var(--transition-fast)',
+                }}
+              >
+                <Sun size={20} strokeWidth={2.5} />
+                Light
+              </button>
+              <button
+                onClick={() => handleThemeChange('dark')}
+                style={{
+                  flex: 1,
+                  padding: '12px',
+                  borderRadius: '8px',
+                  border: theme === 'dark' ? '2px solid var(--color-primary)' : '1px solid var(--color-border)',
+                  backgroundColor: theme === 'dark' ? 'var(--color-primary-light)' : 'var(--color-surface)',
+                  color: theme === 'dark' ? '#fff' : 'var(--color-text-primary)',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '4px',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  transition: 'all var(--transition-fast)',
+                }}
+              >
+                <Moon size={20} strokeWidth={2.5} />
+                Dark
+              </button>
+              <button
+                onClick={() => handleThemeChange('auto')}
+                style={{
+                  flex: 1,
+                  padding: '12px',
+                  borderRadius: '8px',
+                  border: theme === 'auto' ? '2px solid var(--color-primary)' : '1px solid var(--color-border)',
+                  backgroundColor: theme === 'auto' ? 'var(--color-primary-light)' : 'var(--color-surface)',
+                  color: theme === 'auto' ? '#fff' : 'var(--color-text-primary)',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '4px',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  transition: 'all var(--transition-fast)',
+                }}
+              >
+                <Monitor size={20} strokeWidth={2.5} />
+                Auto
+              </button>
             </div>
           </Card>
         </div>
