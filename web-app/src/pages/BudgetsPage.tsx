@@ -5,6 +5,7 @@ import { Input } from '../components/Input';
 import { Modal } from '../components/Modal';
 import { ProgressBar } from '../components/ProgressBar';
 import { MonthHeader } from '../components/MonthHeader';
+import { useToast } from '../contexts/ToastContext';
 import { formatMoney, parseMoneyInput } from '../domain/money';
 import { getCurrentMonthKey, getMonthBoundaries, getPreviousMonthKey, getNextMonthKey } from '../domain/monthCalculations';
 import { getSettings } from '../db/repositories/settingsRepository';
@@ -14,6 +15,7 @@ import { getAllTransactions } from '../db/repositories/transactionsRepository';
 import type { Budget, Category } from '../db/database';
 
 export function BudgetsPage() {
+  const toast = useToast();
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [currency, setCurrency] = useState('USD');
@@ -95,7 +97,7 @@ export function BudgetsPage() {
   const handleAddBudget = async () => {
     const amountMinor = parseMoneyInput(formAmount);
     if (amountMinor <= 0) {
-      alert('Please enter a valid amount');
+      toast.error('Please enter a valid amount');
       return;
     }
 

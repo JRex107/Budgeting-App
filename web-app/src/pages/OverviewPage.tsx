@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { PiggyBank } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Card } from '../components/Card';
+import { Skeleton, SkeletonCard } from '../components/Skeleton';
 import { formatMoney } from '../domain/money';
 import { getMonthBoundaries } from '../domain/monthCalculations';
 import { calculateMonthSummary } from '../domain/summaries';
@@ -66,8 +68,41 @@ export function OverviewPage() {
 
   if (loading) {
     return (
-      <div className="loading-container">
-        <div className="spinner" />
+      <div className="page">
+        <div className="page-header">
+          <h1 className="page-title">Overview</h1>
+        </div>
+        <div className="page-content">
+          <Card>
+            <Skeleton variant="text" width="120px" height="18px" />
+            <div style={{ marginBottom: '12px', marginTop: '16px' }}>
+              <Skeleton variant="text" width="100px" height="14px" />
+              <Skeleton variant="text" width="140px" height="24px" />
+            </div>
+            <div style={{ marginBottom: '12px' }}>
+              <Skeleton variant="text" width="120px" height="14px" />
+              <Skeleton variant="text" width="140px" height="24px" />
+            </div>
+            <div style={{ marginBottom: '12px' }}>
+              <Skeleton variant="text" width="60px" height="14px" />
+              <Skeleton variant="text" width="140px" height="24px" />
+            </div>
+          </Card>
+
+          <div style={{ marginTop: '20px' }}>
+            <SkeletonCard />
+          </div>
+
+          <div style={{ marginTop: '20px' }}>
+            <Skeleton variant="text" width="180px" height="20px" />
+          </div>
+
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={i} style={{ marginTop: '12px' }}>
+              <SkeletonCard />
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
@@ -116,6 +151,73 @@ export function OverviewPage() {
                 </div>
               </div>
             )}
+          </Card>
+        </div>
+
+        {/* Trends Chart */}
+        <div style={{ marginBottom: '20px' }}>
+          <Card>
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px' }}>
+              Income & Expense Trends
+            </h3>
+          <div style={{ width: '100%', height: '300px' }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart
+                data={monthsData.map(m => ({
+                  month: m.monthKey,
+                  Income: m.income / 100, // Convert to major units
+                  Expenses: m.expense / 100,
+                  Net: m.net / 100,
+                }))}
+                margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+                <XAxis
+                  dataKey="month"
+                  stroke="var(--color-text-secondary)"
+                  style={{ fontSize: '12px' }}
+                />
+                <YAxis
+                  stroke="var(--color-text-secondary)"
+                  style={{ fontSize: '12px' }}
+                  tickFormatter={(value) => `${currency === 'GBP' ? '£' : '$'}${value}`}
+                />
+                <Tooltip
+                  formatter={(value) => formatMoney((value as number) * 100, currency)}
+                  contentStyle={{
+                    background: 'var(--glass-background)',
+                    border: '1px solid var(--color-border)',
+                    borderRadius: 'var(--radius-md)',
+                  }}
+                />
+                <Legend />
+                <Line
+                  type="monotone"
+                  dataKey="Income"
+                  stroke="#10B981"
+                  strokeWidth={2}
+                  dot={{ fill: '#10B981', r: 4 }}
+                  activeDot={{ r: 6 }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="Expenses"
+                  stroke="#EF4444"
+                  strokeWidth={2}
+                  dot={{ fill: '#EF4444', r: 4 }}
+                  activeDot={{ r: 6 }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="Net"
+                  stroke="#6366F1"
+                  strokeWidth={2}
+                  dot={{ fill: '#6366F1', r: 4 }}
+                  activeDot={{ r: 6 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
           </Card>
         </div>
 

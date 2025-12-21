@@ -17,6 +17,9 @@ import { SettingsPage } from './pages/SettingsPage';
 // Layout
 import { AppLayout } from './components/AppLayout';
 
+// Context
+import { ToastProvider } from './contexts/ToastContext';
+
 function App() {
   const [isInitialized, setIsInitialized] = useState(false);
   const [hasOnboarded, setHasOnboarded] = useState(false);
@@ -53,28 +56,30 @@ function App() {
   }
 
   return (
-    <BrowserRouter>
-      <Routes>
-        {!hasOnboarded ? (
-          <>
-            <Route path="/onboarding" element={<OnboardingPage />} />
-            <Route path="*" element={<Navigate to="/onboarding" replace />} />
-          </>
-        ) : (
-          <>
-            <Route element={<AppLayout />}>
-              <Route path="/" element={<DashboardPage />} />
-              <Route path="/transactions" element={<TransactionsPage />} />
-              <Route path="/budgets" element={<BudgetsPage />} />
-              <Route path="/savings" element={<SavingsPage />} />
-              <Route path="/overview" element={<OverviewPage />} />
-              <Route path="/settings" element={<SettingsPage />} />
-            </Route>
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </>
-        )}
-      </Routes>
-    </BrowserRouter>
+    <ToastProvider>
+      <BrowserRouter>
+        <Routes>
+          {!hasOnboarded ? (
+            <>
+              <Route path="/onboarding" element={<OnboardingPage />} />
+              <Route path="*" element={<Navigate to="/onboarding" replace />} />
+            </>
+          ) : (
+            <>
+              <Route element={<AppLayout />}>
+                <Route path="/" element={<DashboardPage />} />
+                <Route path="/transactions" element={<TransactionsPage />} />
+                <Route path="/budgets" element={<BudgetsPage />} />
+                <Route path="/savings" element={<SavingsPage />} />
+                <Route path="/overview" element={<OverviewPage />} />
+                <Route path="/settings" element={<SettingsPage />} />
+              </Route>
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </>
+          )}
+        </Routes>
+      </BrowserRouter>
+    </ToastProvider>
   );
 }
 

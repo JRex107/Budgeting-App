@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
-import { PiggyBank, TrendingUp, TrendingDown, DollarSign } from 'lucide-react';
+import { PiggyBank, TrendingUp, TrendingDown, DollarSign, BarChart3, PieChart } from 'lucide-react';
+import { PieChart as RechartsPie, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import { Card } from '../components/Card';
 import { MonthHeader } from '../components/MonthHeader';
+import { SkeletonStat, SkeletonBudget } from '../components/Skeleton';
 import { formatMoney } from '../domain/money';
 import { getCurrentMonthKey, getMonthBoundaries, getPreviousMonthKey, getNextMonthKey } from '../domain/monthCalculations';
 import { calculateMonthSummary, calculateCategoryBreakdown } from '../domain/summaries';
@@ -12,6 +14,8 @@ import { getAllSavingsPots, getTotalSavings } from '../db/repositories/savingsPo
 import { getBudgetsByMonth } from '../db/repositories/budgetsRepository';
 import type { SavingsPot, Budget } from '../db/database';
 import './DashboardPage.css';
+
+const CHART_COLORS = ['#6366F1', '#8B5CF6', '#EC4899', '#F59E0B', '#10B981', '#06B6D4', '#EF4444', '#F97316'];
 
 interface BudgetWithUsage extends Budget {
   spent: number;
@@ -29,6 +33,7 @@ export function DashboardPage() {
   const [totalSavings, setTotalSavings] = useState(0);
   const [currency, setCurrency] = useState('USD');
   const [loading, setLoading] = useState(true);
+  const [showChart, setShowChart] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -117,8 +122,23 @@ export function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="loading-container">
-        <div className="spinner" />
+      <div className="page">
+        <div className="page-content">
+          <div className="stats-grid">
+            <SkeletonStat />
+            <SkeletonStat />
+            <SkeletonStat />
+          </div>
+
+          <Card>
+            <div style={{ height: '20px', marginBottom: '16px' }} />
+            <SkeletonBudget />
+            <SkeletonBudget />
+            <SkeletonBudget />
+            <SkeletonBudget />
+            <SkeletonBudget />
+          </Card>
+        </div>
       </div>
     );
   }
@@ -267,32 +287,91 @@ export function DashboardPage() {
 
         {breakdown.length > 0 && (
           <Card>
-            <h3 className="section-title">Spending by Category</h3>
-            <div className="category-breakdown">
-              {breakdown
-                .sort((a, b) => b.amount - a.amount) // Sort by amount descending
-                .map((cat, index) => {
-                  const maxAmount = breakdown[0]?.amount || 1;
-                  const percentage = (cat.amount / maxAmount) * 100;
-                  return (
-                    <div key={cat.categoryId} className="category-bar-item">
-                      <div className="category-bar-header">
-                        <div className="category-rank">#{index + 1}</div>
-                        <span className="category-name">{cat.categoryName}</span>
-                        <span className="category-amount">
-                          {formatMoney(cat.amount, currency)}
-                        </span>
-                      </div>
-                      <div className="category-bar-track">
-                        <div
-                          className="category-bar-fill"
-                          style={{ width: `${percentage}%` }}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h3 className="section-title" style={{ margin: 0 }}>Spending by Category</h3>
+              <button
+                onClick={() => setShowChart(!showChart)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '8px 12px',
+                  background: showChart ? 'var(--color-primary)' : 'var(--color-surface)',
+                  color: showChart ? '#fff' : 'var(--color-text-primary)',
+                  border: `1px solid ${showChart ? 'var(--color-primary)' : 'var(--color-border)'}`,
+                  borderRadius: 'var(--radius-md)',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  transition: 'all var(--transition-fast)',
+                }}
+              >
+                {showChart ? <BarChart3 size={16} /> : <PieChart size={16} />}
+                {showChart ? 'Show Bars' : 'Show Chart'}
+              </button>
             </div>
+
+            {showChart ? (
+              <div style={{ width: '100%', height: '300px' }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <RechartsPie>
+                    <Pie
+                      data={breakdown.map((cat) => ({
+                        name: cat.categoryName,
+                        value: cat.amount / 100, // Convert to major units
+                        amount: cat.amount,
+                      }))}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {breakdown.map((_cat, index) => (
+                        <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      formatter={(value) => formatMoney((value as number) * 100, currency)}
+                      contentStyle={{
+                        background: 'var(--glass-background)',
+                        border: '1px solid var(--color-border)',
+                        borderRadius: 'var(--radius-md)',
+                      }}
+                    />
+                    <Legend />
+                  </RechartsPie>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <div className="category-breakdown">
+                {breakdown
+                  .sort((a, b) => b.amount - a.amount) // Sort by amount descending
+                  .map((cat, index) => {
+                    const maxAmount = breakdown[0]?.amount || 1;
+                    const percentage = (cat.amount / maxAmount) * 100;
+                    return (
+                      <div key={cat.categoryId} className="category-bar-item">
+                        <div className="category-bar-header">
+                          <div className="category-rank">#{index + 1}</div>
+                          <span className="category-name">{cat.categoryName}</span>
+                          <span className="category-amount">
+                            {formatMoney(cat.amount, currency)}
+                          </span>
+                        </div>
+                        <div className="category-bar-track">
+                          <div
+                            className="category-bar-fill"
+                            style={{ width: `${percentage}%` }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+            )}
           </Card>
         )}
       </div>

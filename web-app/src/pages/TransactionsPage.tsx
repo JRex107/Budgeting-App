@@ -4,6 +4,7 @@ import { Button } from '../components/Button';
 import { Input } from '../components/Input';
 import { SlideOver } from '../components/SlideOver';
 import { FilterChip } from '../components/FilterChip';
+import { useToast } from '../contexts/ToastContext';
 import { formatMoney, parseMoneyInput } from '../domain/money';
 import { formatDateISO } from '../domain/monthCalculations';
 import { getSettings } from '../db/repositories/settingsRepository';
@@ -14,6 +15,7 @@ import { getAllSavingsPots, createPotTransaction } from '../db/repositories/savi
 import type { Transaction, Category, Account, SavingsPot } from '../db/database';
 
 export function TransactionsPage() {
+  const toast = useToast();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
@@ -105,7 +107,7 @@ export function TransactionsPage() {
   const handleAddTransaction = async () => {
     const amountMinor = parseMoneyInput(formAmount);
     if (amountMinor <= 0) {
-      alert('Please enter a valid amount');
+      toast.error('Please enter a valid amount');
       return;
     }
 
@@ -115,13 +117,13 @@ export function TransactionsPage() {
 
       for (const allocation of savingsAllocations) {
         if (!allocation.potId) {
-          alert('Please select a savings pot for all allocations');
+          toast.error('Please select a savings pot for all allocations');
           return;
         }
 
         const allocationAmount = parseMoneyInput(allocation.amount);
         if (allocationAmount <= 0) {
-          alert('Please enter a valid amount for all savings allocations');
+          toast.error('Please enter a valid amount for all savings allocations');
           return;
         }
 
@@ -129,7 +131,7 @@ export function TransactionsPage() {
       }
 
       if (totalSavings > amountMinor) {
-        alert(`Total savings allocation (${formatMoney(totalSavings, currency)}) cannot exceed income amount (${formatMoney(amountMinor, currency)})`);
+        toast.error(`Total savings allocation (${formatMoney(totalSavings, currency)}) cannot exceed income amount (${formatMoney(amountMinor, currency)})`);
         return;
       }
     }

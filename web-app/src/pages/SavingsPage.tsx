@@ -3,6 +3,7 @@ import { Card } from '../components/Card';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
 import { Modal } from '../components/Modal';
+import { useToast } from '../contexts/ToastContext';
 import { formatMoney, parseMoneyInput } from '../domain/money';
 import { formatDateISO } from '../domain/monthCalculations';
 import { getSettings } from '../db/repositories/settingsRepository';
@@ -15,6 +16,7 @@ import {
 import type { SavingsPot, PotTransaction } from '../db/database';
 
 export function SavingsPage() {
+  const toast = useToast();
   const [pots, setPots] = useState<SavingsPot[]>([]);
   const [currency, setCurrency] = useState('USD');
   const [totalSavings, setTotalSavings] = useState(0);
@@ -82,7 +84,7 @@ export function SavingsPage() {
 
     const amountMinor = parseMoneyInput(formAmount);
     if (amountMinor <= 0) {
-      alert('Please enter a valid amount');
+      toast.error('Please enter a valid amount');
       return;
     }
 
@@ -102,12 +104,12 @@ export function SavingsPage() {
 
     const amountMinor = parseMoneyInput(formAmount);
     if (amountMinor <= 0) {
-      alert('Please enter a valid amount');
+      toast.error('Please enter a valid amount');
       return;
     }
 
     if (amountMinor > selectedPot.currentAmountMinor) {
-      alert('Insufficient funds in this pot');
+      toast.error('Insufficient funds in this pot');
       return;
     }
 

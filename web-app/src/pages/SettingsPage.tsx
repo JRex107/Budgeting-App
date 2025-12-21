@@ -4,6 +4,7 @@ import { Card } from '../components/Card';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
 import { Modal } from '../components/Modal';
+import { useToast } from '../contexts/ToastContext';
 import { getSettings, updateSettings } from '../db/repositories/settingsRepository';
 import { getAllCategories, createCategory, deleteCategory } from '../db/repositories/categoriesRepository';
 import { getAllAccounts, createAccount, deleteAccount } from '../db/repositories/accountsRepository';
@@ -13,6 +14,7 @@ import { resetDatabase } from '../db/database';
 import type { Category, Account, SavingsPot } from '../db/database';
 
 export function SettingsPage() {
+  const toast = useToast();
   const [categories, setCategories] = useState<Category[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [savingsPots, setSavingsPots] = useState<SavingsPot[]>([]);
@@ -79,7 +81,7 @@ export function SettingsPage() {
 
   const handleAddCategory = async () => {
     if (!newCategoryName.trim()) {
-      alert('Please enter a category name');
+      toast.error('Please enter a category name');
       return;
     }
 
@@ -95,7 +97,7 @@ export function SettingsPage() {
 
   const handleAddAccount = async () => {
     if (!newAccountName.trim()) {
-      alert('Please enter an account name');
+      toast.error('Please enter an account name');
       return;
     }
 
@@ -108,7 +110,7 @@ export function SettingsPage() {
 
   const handleAddPot = async () => {
     if (!newPotName.trim()) {
-      alert('Please enter a pot name');
+      toast.error('Please enter a pot name');
       return;
     }
 
@@ -137,7 +139,7 @@ export function SettingsPage() {
   const handleSaveSettings = async () => {
     const day = parseInt(editMonthStartDay, 10);
     if (isNaN(day) || day < 1 || day > 28) {
-      alert('Month start day must be between 1 and 28');
+      toast.error('Month start day must be between 1 and 28');
       return;
     }
 
@@ -148,8 +150,10 @@ export function SettingsPage() {
 
     setIsEditSettingsOpen(false);
     await loadData();
-    alert('Settings updated! The app will reload to apply changes.');
-    window.location.reload();
+    toast.success('Settings updated! The app will reload to apply changes.');
+    setTimeout(() => {
+      window.location.reload();
+    }, 1500);
   };
 
   const handleDeleteCategory = async (category: Category) => {
@@ -157,7 +161,7 @@ export function SettingsPage() {
     const hasTransactions = transactions.some(tx => tx.categoryId === category.id);
 
     if (hasTransactions) {
-      alert(`Cannot delete "${category.name}" because it has transactions. Delete the transactions first.`);
+      toast.error(`Cannot delete "${category.name}" because it has transactions. Delete the transactions first.`);
       return;
     }
 
@@ -174,7 +178,7 @@ export function SettingsPage() {
     const hasTransactions = transactions.some(tx => tx.accountId === account.id);
 
     if (hasTransactions) {
-      alert(`Cannot delete "${account.name}" because it has transactions. Delete the transactions first.`);
+      toast.error(`Cannot delete "${account.name}" because it has transactions. Delete the transactions first.`);
       return;
     }
 
@@ -188,7 +192,7 @@ export function SettingsPage() {
 
   const handleDeletePot = async (pot: SavingsPot) => {
     if (pot.currentAmountMinor > 0) {
-      alert(`Cannot delete "${pot.name}" because it has a balance. Withdraw all money first.`);
+      toast.error(`Cannot delete "${pot.name}" because it has a balance. Withdraw all money first.`);
       return;
     }
 
@@ -210,8 +214,10 @@ export function SettingsPage() {
     }
 
     resetDatabase().then(() => {
-      alert('App reset successfully. Reloading...');
-      window.location.reload();
+      toast.success('App reset successfully. Reloading...');
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
     });
   };
 
