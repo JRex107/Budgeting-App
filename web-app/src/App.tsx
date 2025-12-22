@@ -45,41 +45,6 @@ function App() {
     };
 
     init();
-
-    // Theme initialization and listener for system preference changes
-    const applyTheme = () => {
-      const savedTheme = localStorage.getItem('theme');
-      const root = document.documentElement;
-
-      if (savedTheme === 'light') {
-        root.setAttribute('data-theme', 'light');
-      } else if (savedTheme === 'dark') {
-        root.setAttribute('data-theme', 'dark');
-      } else {
-        // Auto mode - follow system preference
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        root.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
-      }
-    };
-
-    // Apply theme on mount
-    applyTheme();
-
-    // Listen for system theme changes (only affects auto mode)
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleSystemThemeChange = () => {
-      const savedTheme = localStorage.getItem('theme');
-      // Only update if in auto mode
-      if (!savedTheme || savedTheme === 'auto') {
-        applyTheme();
-      }
-    };
-
-    mediaQuery.addEventListener('change', handleSystemThemeChange);
-
-    return () => {
-      mediaQuery.removeEventListener('change', handleSystemThemeChange);
-    };
   }, []);
 
   if (!isInitialized) {
