@@ -358,12 +358,26 @@ export function TransactionsPage() {
               <Button
                 title="Expense"
                 variant={formType === 'expense' ? 'primary' : 'secondary'}
-                onPress={() => setFormType('expense')}
+                onPress={() => {
+                  setFormType('expense');
+                  // Reset to first expense category when switching types
+                  const expenseCategories = categories.filter(c => c.isIncomeCategory === 0);
+                  if (expenseCategories.length > 0) {
+                    setFormCategory(expenseCategories[0].id?.toString() || '');
+                  }
+                }}
               />
               <Button
                 title="Income"
                 variant={formType === 'income' ? 'primary' : 'secondary'}
-                onPress={() => setFormType('income')}
+                onPress={() => {
+                  setFormType('income');
+                  // Reset to first income category when switching types
+                  const incomeCategories = categories.filter(c => c.isIncomeCategory === 1);
+                  if (incomeCategories.length > 0) {
+                    setFormCategory(incomeCategories[0].id?.toString() || '');
+                  }
+                }}
               />
             </div>
 
