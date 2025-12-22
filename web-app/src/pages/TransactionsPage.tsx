@@ -279,10 +279,12 @@ export function TransactionsPage() {
           />
         </div>
 
-        <Button
-          title="+ Add Transaction"
-          onPress={handleOpenModal}
-        />
+        <div style={{ marginTop: '24px', marginBottom: '24px' }}>
+          <Button
+            title="+ Add Transaction"
+            onPress={handleOpenModal}
+          />
+        </div>
 
         {filteredTransactions.length === 0 ? (
           <Card>
