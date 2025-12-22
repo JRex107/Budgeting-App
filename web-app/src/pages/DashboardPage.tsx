@@ -239,9 +239,9 @@ export function DashboardPage() {
               <PiggyBank size={20} strokeWidth={2.5} />
               Savings
             </h3>
-            <div style={{ marginBottom: '16px', padding: '12px', backgroundColor: '#F2F2F7', borderRadius: '8px' }}>
-              <p style={{ fontSize: '12px', color: '#8E8E93', marginBottom: '4px' }}>Total Saved</p>
-              <p style={{ fontSize: '24px', fontWeight: '600', color: '#007AFF' }}>
+            <div style={{ marginBottom: '16px', padding: '12px', backgroundColor: 'var(--color-surface)', borderRadius: '8px' }}>
+              <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Total Saved</p>
+              <p style={{ fontSize: '24px', fontWeight: '600', color: 'var(--color-primary)' }}>
                 {formatMoney(totalSavings, currency)}
               </p>
             </div>
@@ -268,7 +268,7 @@ export function DashboardPage() {
                     </span>
                   </div>
                   {pot.targetAmountMinor > 0 && (
-                    <div style={{ width: '100%', height: '6px', backgroundColor: '#F2F2F7', borderRadius: '3px', overflow: 'hidden' }}>
+                    <div style={{ width: '100%', height: '6px', backgroundColor: 'var(--color-surface)', borderRadius: '3px', overflow: 'hidden' }}>
                       <div
                         style={{
                           width: `${progress}%`,

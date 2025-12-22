@@ -137,10 +137,10 @@ export function SavingsPage() {
       <div className="page-content">
         <Card>
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '14px', color: '#8E8E93', marginBottom: '4px' }}>
+            <div style={{ fontSize: '14px', color: 'var(--color-text-secondary)', marginBottom: '4px' }}>
               Total Savings
             </div>
-            <div style={{ fontSize: '32px', fontWeight: '600', color: '#007AFF' }}>
+            <div style={{ fontSize: '32px', fontWeight: '600', color: 'var(--color-primary)' }}>
               {formatMoney(totalSavings, currency)}
             </div>
           </div>
@@ -148,7 +148,7 @@ export function SavingsPage() {
 
         {pots.length === 0 ? (
           <Card>
-            <p style={{ fontSize: '14px', color: '#8E8E93', textAlign: 'center' }}>
+            <p style={{ fontSize: '14px', color: 'var(--color-text-secondary)', textAlign: 'center' }}>
               No savings pots yet. Create one in Settings to get started!
             </p>
           </Card>
@@ -175,11 +175,11 @@ export function SavingsPage() {
 
                 {pot.targetAmountMinor > 0 && (
                   <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#8E8E93', marginBottom: '4px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '4px' }}>
                       <span>{Math.round(getProgressPercentage(pot))}% of goal</span>
                       <span>{formatMoney(pot.targetAmountMinor, currency)}</span>
                     </div>
-                    <div style={{ width: '100%', height: '8px', backgroundColor: '#F2F2F7', borderRadius: '4px', overflow: 'hidden' }}>
+                    <div style={{ width: '100%', height: '8px', backgroundColor: 'var(--color-surface)', borderRadius: '4px', overflow: 'hidden' }}>
                       <div
                         style={{
                           width: `${getProgressPercentage(pot)}%`,
@@ -278,8 +278,8 @@ export function SavingsPage() {
         title={`Withdraw from ${selectedPot?.name}`}
       >
         {selectedPot && (
-          <div style={{ marginBottom: '16px', padding: '12px', backgroundColor: '#F2F2F7', borderRadius: '8px' }}>
-            <div style={{ fontSize: '12px', color: '#8E8E93' }}>Available</div>
+          <div style={{ marginBottom: '16px', padding: '12px', backgroundColor: 'var(--color-surface)', borderRadius: '8px' }}>
+            <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>Available</div>
             <div style={{ fontSize: '20px', fontWeight: '600' }}>
               {formatMoney(selectedPot.currentAmountMinor, currency)}
             </div>
@@ -312,7 +312,7 @@ export function SavingsPage() {
       >
         <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
           {potHistory.length === 0 ? (
-            <p style={{ fontSize: '14px', color: '#8E8E93', textAlign: 'center' }}>
+            <p style={{ fontSize: '14px', color: 'var(--color-text-secondary)', textAlign: 'center' }}>
               No transactions yet
             </p>
           ) : (
@@ -330,7 +330,7 @@ export function SavingsPage() {
                   <div style={{ fontSize: '14px', fontWeight: '600' }}>
                     {tx.note}
                   </div>
-                  <div style={{ fontSize: '12px', color: '#8E8E93' }}>
+                  <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>
                     {tx.dateISO}
                   </div>
                 </div>

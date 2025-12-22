@@ -260,7 +260,7 @@ export function SettingsPage() {
             </h3>
             <div style={{ marginBottom: '8px' }}>
               <div style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px' }}>Theme</div>
-              <div style={{ fontSize: '14px', color: '#8E8E93', marginBottom: '12px' }}>
+              <div style={{ fontSize: '14px', color: 'var(--color-text-secondary)', marginBottom: '12px' }}>
                 Choose your preferred color theme
               </div>
             </div>
@@ -348,7 +348,7 @@ export function SettingsPage() {
 
             <div style={{ marginTop: '16px' }}>
               {accounts.length === 0 ? (
-                <p style={{ fontSize: '14px', color: '#8E8E93' }}>
+                <p style={{ fontSize: '14px', color: 'var(--color-text-secondary)' }}>
                   No accounts yet. Add one to get started!
                 </p>
               ) : (
@@ -480,7 +480,7 @@ export function SettingsPage() {
 
             <div style={{ marginTop: '16px' }}>
               {savingsPots.length === 0 ? (
-                <p style={{ fontSize: '14px', color: '#8E8E93' }}>
+                <p style={{ fontSize: '14px', color: 'var(--color-text-secondary)' }}>
                   No savings pots yet. Create pots to save for specific goals!
                 </p>
               ) : (
@@ -650,7 +650,7 @@ export function SettingsPage() {
           placeholder="1"
         />
 
-        <p style={{ fontSize: '14px', color: '#8E8E93', marginBottom: '16px' }}>
+        <p style={{ fontSize: '14px', color: 'var(--color-text-secondary)', marginBottom: '16px' }}>
           Changing these settings will affect how your budget months are calculated. The app will reload after saving.
         </p>
 
